@@ -32,9 +32,6 @@ function sendEmail(opts) {
 app.use(cors());
 app.use(express.json());
 
-const publicPath = path.join(process.cwd(), 'public');
-app.use(express.static(publicPath));
-
 // ── DB Init ──
 async function initDB() {
   await pool.query(`
@@ -227,11 +224,6 @@ app.post('/api/resend-verify', async (req, res) => {
 
 // 헬스체크
 app.get('/api/health', (_, res) => res.json({ status: 'ok', time: new Date() }));
-
-// SPA fallback
-app.get('*', (_, res) => {
-  res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
-});
 
 // 로컬 실행용 (Vercel에서는 module.exports만 사용)
 if (require.main === module) {
