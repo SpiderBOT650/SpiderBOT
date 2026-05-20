@@ -35,6 +35,7 @@ async function initDB() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id                SERIAL PRIMARY KEY,
+      user_id_num       VARCHAR(10)  UNIQUE NOT NULL,
       username          VARCHAR(50)  UNIQUE NOT NULL,
       email             VARCHAR(255) UNIQUE NOT NULL,
       password_hash     VARCHAR(255) NOT NULL,
@@ -47,134 +48,79 @@ async function initDB() {
       created_at        TIMESTAMP    DEFAULT NOW()
     )
   `);
-  console.log('✅ DB ready');
+  console.log('✅ SpiderBOT DB Ready');
 }
 
-// ── Auth ──
+// ── Auth Middleware ──
 function auth(req, res, next) {
   const token = (req.headers.authorization || '').split(' ')[1];
   if (!token) return res.status(401).json({ error: '로그인이 필요합니다' });
-  try { req.user = jwt.verify(token, process.env.JWT_SECRET || 'dev_secret'); next(); }
-  catch { res.status(401).json({ error: '인증이 만료되었습니다' }); }
+  try { 
+    req.user = jwt.verify(token, process.env.JWT_SECRET || 'dev_secret'); 
+    next(); 
+  } catch { 
+    res.status(401).json({ error: '인증이 만료되었습니다' }); 
+  }
 }
 
-// ── Email ──
-function emailHTML(username, url) {
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#0C0B18;font-family:Arial,sans-serif">
-<div style="max-width:480px;margin:40px auto;padding:20px">
-  <div style="background:#1A1733;border-radius:20px;padding:40px;border:1px solid rgba(139,92,246,0.3)">
-    <h1 style="margin:0 0 4px;font-size:28px;color:#A855F7;letter-spacing:4px">SpiderBOT</h1>
-    <p style="margin:0 0 28px;font-size:11px;color:#5A5680;letter-spacing:2px">AI TRADING BOT PLATFORM</p>
-    <h2 style="margin:0 0 12px;font-size:18px;color:#fff">이메일 인증 요청</h2>
-    <p style="margin:0 0 28px;font-size:14px;color:#9B97B8;line-height:1.7">안녕하세요 <strong style="color:#C084FC">${username}</strong>님,<br>아래 버튼을 눌러 인증을 완료해주세요.</p>
-    <a href="${url}" style="display:block;background:linear-gradient(135deg,#7C3AED,#A855F7);color:#fff;text-align:center;padding:15px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px">✅ 이메일 인증하기</a>
-    <p style="margin:20px 0 0;font-size:12px;color:#5A5680;text-align:center">링크는 24시간 후 만료됩니다</p>
-  </div>
-</div></body></html>`;
-}
-
-// ════════════════════
-// API
-// ════════════════════
-
+// ── API Routes ──
 app.post('/api/register', async (req, res) => {
   const { username, email, password } = req.body;
-  if (!username || !email || !password) return res.status(400).json({ error: '모든 항목을 입력해주세요' });
-  if (username.length < 3 || username.length > 20) return res.status(400).json({ error: '아이디는 3~20자여야 합니다' });
-  if (!/^[a-zA-Z0-9_]+$/.test(username)) return res.status(400).json({ error: '아이디는 영문·숫자·밑줄만 가능합니다' });
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: '이메일 형식이 올바르지 않습니다' });
-  if (password.length < 8) return res.status(400).json({ error: '비밀번호는 8자 이상이어야 합니다' });
-  if (!/[!@#$%^&*()\-_=+\[\]{};':",.<>/?\\|]/.test(password)) return res.status(400).json({ error: '비밀번호에 특수문자를 포함해야 합니다' });
+  if (!username || !email || !password) return res.status(400).json({ error: '모든 필드를 입력해주세요' });
+
   try {
-    const hash  = await bcrypt.hash(password, 10);
+    const hashed = await bcrypt.hash(password, 10);
+    // 10자리 고유 랜덤 숫자 생성 (1000000000 ~ 9999999999)
+    const randomIDNum = String(Math.floor(1000000000 + Math.random() * 9000000000));
     const token = crypto.randomBytes(32).toString('hex');
-    const exp   = new Date(Date.now() + 86400000);
+    const expires = new Date(Date.now() + 86400000); // 24시간 후 만료
+
     await pool.query(
-      `INSERT INTO users (username,email,password_hash,verification_token,token_expires_at) VALUES ($1,$2,$3,$4,$5)`,
-      [username, email.toLowerCase(), hash, token, exp]
+      'INSERT INTO users (user_id_num, username, email, password_hash, verification_token, token_expires_at) VALUES ($1, $2, $3, $4, $5, $6)',
+      [randomIDNum, username.trim(), email.toLowerCase().trim(), hashed, token, expires]
     );
+
     const base = process.env.BASE_URL || `http://localhost:${PORT}`;
     await sendEmail({
       from: process.env.FROM_EMAIL || 'SpiderBOT <onboarding@resend.dev>',
       to: email,
-      subject: '[SpiderBOT] 이메일 인증을 완료해주세요',
-      html: emailHTML(username, `${base}/api/verify?token=${token}`),
+      subject: '[SpiderBOT] 계정 이메일 인증 안내',
+      html: `<p>인증 링크: <a href="${base}/api/verify?token=${token}">여기 클릭</a></p>`
     });
-    res.json({ message: `${email}로 인증 메일을 발송했습니다.` });
-  } catch (e) {
-    if (e.code === '23505') {
-      if (e.constraint?.includes('username')) return res.status(400).json({ error: '이미 사용 중인 아이디입니다' });
-      if (e.constraint?.includes('email'))    return res.status(400).json({ error: '이미 사용 중인 이메일입니다' });
-    }
-    console.error(e);
-    res.status(500).json({ error: '서버 오류가 발생했습니다' });
-  }
-});
 
-app.get('/api/verify', async (req, res) => {
-  const { token } = req.query;
-  if (!token) return res.redirect('/?error=invalid');
-  try {
-    const r = await pool.query(
-      `UPDATE users SET email_verified=TRUE,verification_token=NULL,token_expires_at=NULL
-       WHERE verification_token=$1 AND token_expires_at > NOW() RETURNING username`,
-      [token]
-    );
-    if (!r.rowCount) return res.redirect('/?error=expired');
-    res.redirect(`/?verified=true&u=${encodeURIComponent(r.rows[0].username)}`);
-  } catch (e) { console.error(e); res.redirect('/?error=server'); }
+    res.json({ message: '회원가입 완료! 인증 메일을 확인해주세요.' });
+  } catch (e) {
+    if (e.code === '23505') return res.status(400).json({ error: '이미 사용 중인 아이디 또는 이메일입니다.' });
+    res.status(500).json({ error: '서버 가입 에러' });
+  }
 });
 
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ error: '아이디와 비밀번호를 입력해주세요' });
   try {
-    const r = await pool.query('SELECT * FROM users WHERE username=$1', [username]);
-    if (!r.rows.length) return res.status(400).json({ error: '아이디 또는 비밀번호가 올바르지 않습니다' });
+    const r = await pool.query('SELECT * FROM users WHERE username=$1', [username.trim()]);
+    if (!r.rows.length) return res.status(400).json({ error: '가입되지 않은 회원입니다' });
+    
     const user = r.rows[0];
-    if (!user.email_verified) return res.status(400).json({ error: '이메일 인증이 필요합니다', code: 'NOT_VERIFIED' });
-    if (!await bcrypt.compare(password, user.password_hash)) return res.status(400).json({ error: '아이디 또는 비밀번호가 올바르지 않습니다' });
+    if (!await bcrypt.compare(password, user.password_hash)) return res.status(400).json({ error: '비밀번호가 일치하지 않습니다' });
+
     const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET || 'dev_secret', { expiresIn: '7d' });
-    res.json({ token, user: { id: user.id, username: user.username, email: user.email, plan: user.plan } });
-  } catch (e) { console.error(e); res.status(500).json({ error: '서버 오류가 발생했습니다' }); }
+    res.json({ token, username: user.username, verified: user.email_verified });
+  } catch (e) {
+    res.status(500).json({ error: '로그인 서버 오류' });
+  }
 });
 
-app.get('/api/me', auth, async (req, res) => {
+// 프로필 데이터 연동 API
+app.get('/api/user', auth, async (req, res) => {
   try {
-    const r = await pool.query('SELECT id,username,email,plan,balance,total_profit,created_at FROM users WHERE id=$1', [req.user.id]);
-    if (!r.rows.length) return res.status(404).json({ error: '사용자 없음' });
+    const r = await pool.query('SELECT user_id_num, username, email, plan, balance, total_profit, created_at FROM users WHERE id=$1', [req.user.id]);
     res.json(r.rows[0]);
-  } catch (e) { res.status(500).json({ error: '서버 오류' }); }
+  } catch (e) {
+    res.status(500).json({ error: '데이터 조회 실패' });
+  }
 });
 
-app.post('/api/resend-verify', async (req, res) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ error: '이메일을 입력해주세요' });
-  try {
-    const r = await pool.query('SELECT * FROM users WHERE email=$1 AND email_verified=FALSE', [email.toLowerCase()]);
-    if (!r.rows.length) return res.status(400).json({ error: '미인증 계정을 찾을 수 없습니다' });
-    const user  = r.rows[0];
-    const token = crypto.randomBytes(32).toString('hex');
-    const exp   = new Date(Date.now() + 86400000);
-    await pool.query('UPDATE users SET verification_token=$1,token_expires_at=$2 WHERE id=$3', [token, exp, user.id]);
-    const base = process.env.BASE_URL || `http://localhost:${PORT}`;
-    await sendEmail({
-      from: process.env.FROM_EMAIL || 'SpiderBOT <onboarding@resend.dev>',
-      to: email,
-      subject: '[SpiderBOT] 인증 메일 재발송',
-      html: emailHTML(user.username, `${base}/api/verify?token=${token}`),
-    });
-    res.json({ message: '인증 메일을 재발송했습니다' });
-  } catch (e) { console.error(e); res.status(500).json({ error: '서버 오류가 발생했습니다' }); }
+initDB().then(() => {
+  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 });
-
-app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
-
-// SPA fallback
-app.get('*', (_, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-
-// ── Start ──
-initDB()
-  .then(() => app.listen(PORT, () => console.log(`🚀 SpiderBOT on port ${PORT}`)))
-  .catch(e => { console.error('DB error:', e.message); process.exit(1); });
