@@ -31,7 +31,9 @@ function sendEmail(opts) {
 // ── Middleware ──
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../public')));
+
+const publicPath = path.join(process.cwd(), 'public');
+app.use(express.static(publicPath));
 
 // ── DB Init ──
 async function initDB() {
@@ -228,7 +230,7 @@ app.get('/api/health', (_, res) => res.json({ status: 'ok', time: new Date() }))
 
 // SPA fallback
 app.get('*', (_, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
+  res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
 });
 
 // 로컬 실행용 (Vercel에서는 module.exports만 사용)
