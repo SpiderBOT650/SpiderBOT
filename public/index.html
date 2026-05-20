@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>SpiderBOT Platform</title>
+<title>SpiderBOT</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;500;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -12,180 +12,1159 @@
   --border:rgba(139,92,246,0.2);--border2:rgba(139,92,246,0.45);
   --green:#00E676;--green-glow:rgba(0,230,118,0.35);
   --purple:#A855F7;--purple2:#7C3AED;--purple-light:#C084FC;
-  --purple-glow:rgba(168,85,247,0.4);
-  --text:#FFFFFF;--text2:#9B97B8;--text3:#5A5680;
-  --neon-purple:0 0 8px rgba(168,85,247,0.8),0 0 20px rgba(168,85,247,0.4);
-  --neon-green:0 0 8px rgba(0,230,118,0.8),0 0 20px rgba(0,230,118,0.4);
+  --purple-glow:rgba(168,85,247,0.4);--purple-glow2:rgba(124,58,237,0.25);
+  --red:#FF3B5C;--text:#FFFFFF;--text2:#9B97B8;--text3:#5A5680;
+  --neon-purple:0 0 8px rgba(168,85,247,0.8),0 0 20px rgba(168,85,247,0.4),0 0 40px rgba(124,58,237,0.2);
+  --neon-green:0 0 8px rgba(0,230,118,0.8),0 0 20px rgba(0,230,118,0.4),0 0 40px rgba(0,230,118,0.2);
+  --neon-border-purple:0 0 6px rgba(168,85,247,0.6),inset 0 0 6px rgba(168,85,247,0.1);
 }
+html{font-size:16px}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
-/* 하단 내비게이션 바 고정 스타일 */
-.bnav{
-  position:fixed;bottom:0;left:0;right:0;background:rgba(7,6,15,0.95);
-  backdrop-filter:blur(20px);border-top:1px solid rgba(168,85,247,0.2);
-  display:flex;align-items:center;padding:8px 10px 22px;z-index:100;gap:4px;
+/* ═══════════════════════════════
+   AUTH OVERLAY
+═══════════════════════════════ */
+#auth-wrap{
+  position:fixed;inset:0;z-index:500;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:24px 20px;overflow-y:auto;
 }
-.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;}
-.ni-ico{font-size:20px;line-height:1}
-.ni-lbl{font-size:11px;color:var(--text3);font-weight:500;}
-.ni.on .ni-lbl{color:var(--purple-light);text-shadow:0 0 8px rgba(192,132,252,0.6)}
+#auth-wrap.hidden{display:none}
 
-/* 메인 대시보드 및 리스트 공통 카드 */
-.neon-card{background:rgba(14,12,30,0.7);border:1px solid rgba(168,85,247,0.25);border-radius:18px;padding:20px;margin-bottom:16px;}
-.page{display:none;padding:20px 20px 100px;}
+/* Spider web canvas */
+#web-canvas{
+  position:fixed;inset:0;z-index:0;
+  pointer-events:none;opacity:0.55;
+}
+
+/* Auth content above canvas */
+.auth-content{
+  position:relative;z-index:2;
+  width:100%;display:flex;flex-direction:column;
+  align-items:center;
+}
+
+.auth-logo{text-align:center;margin-bottom:32px}
+.auth-logo-name{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(52px,10vw,72px);
+  letter-spacing:8px;line-height:1;
+  background:linear-gradient(180deg,#fff 0%,#eee 20%,#C084FC 50%,#7C3AED 80%,#A855F7 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-shadow:none;
+  filter:drop-shadow(0 0 20px rgba(168,85,247,0.6)) drop-shadow(0 0 40px rgba(124,58,237,0.3));
+}
+.auth-logo-sub{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(11px,2vw,14px);
+  letter-spacing:5px;color:var(--purple-light);
+  margin-top:6px;
+  text-shadow:0 0 10px rgba(192,132,252,0.6);
+}
+
+.auth-card{
+  width:100%;max-width:440px;
+  background:rgba(14,12,30,0.85);
+  border:1px solid rgba(168,85,247,0.35);
+  border-radius:24px;padding:28px 24px;
+  backdrop-filter:blur(20px);
+  box-shadow:var(--neon-border-purple),0 20px 60px rgba(0,0,0,0.5);
+}
+
+.tab-row{display:flex;background:rgba(255,255,255,0.04);border-radius:12px;padding:4px;margin-bottom:24px;gap:4px}
+.tab{flex:1;padding:11px;text-align:center;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;color:var(--text3);transition:all .2s;letter-spacing:.5px}
+.tab.on{background:linear-gradient(135deg,var(--purple2),var(--purple));color:#fff;box-shadow:var(--neon-purple)}
+
+.fg{margin-bottom:14px}
+.fl{font-size:11px;color:var(--text2);margin-bottom:7px;display:block;font-weight:500;letter-spacing:.5px;text-transform:uppercase}
+.fi{
+  width:100%;background:rgba(255,255,255,0.04);
+  border:1px solid rgba(139,92,246,0.2);
+  border-radius:12px;padding:13px 16px;
+  font-size:15px;color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  outline:none;transition:all .2s;
+}
+.fi:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(168,85,247,0.15),0 0 12px rgba(168,85,247,0.2)}
+.pw-wrap{position:relative}
+.pw-eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px;font-family:'Noto Sans KR',sans-serif}
+
+.abtn{
+  width:100%;padding:14px;margin-top:6px;
+  background:linear-gradient(135deg,var(--purple2),var(--purple));
+  border:none;border-radius:13px;
+  color:#fff;font-size:15px;font-weight:700;
+  font-family:'Noto Sans KR',sans-serif;cursor:pointer;
+  box-shadow:var(--neon-purple);
+  transition:all .2s;letter-spacing:.5px;
+}
+.abtn:hover{box-shadow:0 0 15px rgba(168,85,247,0.9),0 0 30px rgba(168,85,247,0.5),0 0 60px rgba(124,58,237,0.3)}
+.abtn:active{transform:scale(.98)}
+.abtn:disabled{opacity:.6;cursor:default;box-shadow:none}
+
+.aerr{background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.3);border-radius:10px;padding:11px 14px;font-size:13px;color:#FF8090;margin-bottom:14px;display:none;line-height:1.6}
+.aerr.show{display:block}
+.aok{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.3);border-radius:10px;padding:11px 14px;font-size:13px;color:var(--green);margin-bottom:14px;display:none;line-height:1.6;text-shadow:0 0 8px rgba(0,230,118,0.4)}
+.aok.show{display:block}
+
+.pw-rules{background:rgba(255,255,255,.03);border:1px solid rgba(139,92,246,0.12);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.pw-rules-title{font-size:11px;color:var(--text3);margin-bottom:7px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.rule{font-size:12px;color:var(--text3);margin-bottom:4px;padding-left:2px;transition:color .2s}
+.rule.ok{color:var(--green);text-shadow:0 0 6px rgba(0,230,118,0.4)}
+.rule.ok::before{content:'+ '}
+.rule.no::before{content:'- '}
+
+.lbtn{background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;text-decoration:none;font-family:'Noto Sans KR',sans-serif;margin-top:14px;display:block;text-align:center;width:100%;transition:color .2s}
+.lbtn:hover{color:var(--purple-light);text-shadow:0 0 8px rgba(192,132,252,0.5)}
+
+.vbanner{
+  width:100%;max-width:440px;
+  background:rgba(7,26,16,0.9);
+  border:1px solid rgba(0,230,118,.4);
+  border-radius:16px;padding:16px 20px;
+  margin-bottom:20px;text-align:center;
+  display:none;
+  box-shadow:0 0 20px rgba(0,230,118,0.15);
+}
+.vbanner-title{font-size:14px;font-weight:700;color:var(--green);text-shadow:var(--neon-green)}
+.vbanner-sub{font-size:12px;color:var(--text2);margin-top:4px}
+
+/* ═══════════════════════════════
+   TOPBAR
+═══════════════════════════════ */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(7,6,15,0.92);
+  backdrop-filter:blur(20px);
+  padding:12px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(168,85,247,0.2);
+  box-shadow:0 1px 20px rgba(168,85,247,0.08);
+}
+.t-brand{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(20px,3vw,26px);
+  letter-spacing:5px;line-height:1;
+  background:linear-gradient(180deg,#fff 0%,#eee 30%,#C084FC 65%,#A855F7 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 8px rgba(168,85,247,0.5));
+}
+.t-right{display:flex;align-items:center;gap:10px}
+.tic{height:33px;padding:0 12px;background:rgba(255,255,255,.05);border:1px solid rgba(139,92,246,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text2);cursor:pointer;font-weight:500;transition:all .2s;white-space:nowrap}
+.tic:hover{border-color:var(--purple);color:var(--purple-light);box-shadow:0 0 8px rgba(168,85,247,0.2)}
+#t-user{font-size:12px;font-weight:700;color:var(--purple-light);display:none;text-shadow:0 0 8px rgba(192,132,252,0.5)}
+#logout-btn{background:none;border:1px solid rgba(255,59,92,.3);border-radius:8px;padding:6px 12px;color:rgba(255,100,120,.8);font-size:11px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;display:none;transition:all .2s}
+#logout-btn:hover{border-color:rgba(255,59,92,.6);box-shadow:0 0 8px rgba(255,59,92,.2)}
+
+/* ═══════════════════════════════
+   APP LAYOUT (PC + Mobile)
+═══════════════════════════════ */
+.app-wrap{max-width:1200px;margin:0 auto;position:relative}
+
+.page{display:none;padding:20px 20px 100px;animation:fu .2s ease}
 .page.on{display:block}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-/* 크립토 테이블 스타일 */
-.crypto-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
-.crypto-table th{text-align:left;color:var(--text3);padding:10px 8px;border-bottom:1px solid rgba(139,92,246,0.15)}
-.crypto-table td{padding:12px 8px;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--text2)}
-.status-badge{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700}
-.status-badge.in{background:rgba(0,230,118,0.1);color:var(--green)}
-.status-badge.out{background:rgba(168,85,247,0.1);color:var(--purple-light)}
+/* PC: wider layout */
+@media(min-width:768px){
+  .page{padding:28px 32px 60px}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+}
+
+/* ═══════════════════════════════
+   BOTTOM NAV
+═══════════════════════════════ */
+.bnav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(7,6,15,0.95);
+  backdrop-filter:blur(20px);
+  border-top:1px solid rgba(168,85,247,0.2);
+  display:flex;align-items:center;
+  padding:8px 10px 22px;
+  z-index:100;gap:4px;
+  box-shadow:0 -4px 20px rgba(168,85,247,0.08);
+}
+@media(min-width:768px){
+  .bnav{padding:10px 40px 14px;max-width:600px;left:50%;transform:translateX(-50%);border-radius:20px 20px 0 0}
+}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;transition:all .2s}
+.ni-ico{font-size:18px;line-height:1}
+.ni-lbl{font-size:10px;color:var(--text3);font-weight:500;transition:all .2s}
+.ni.on .ni-lbl{color:var(--purple-light);text-shadow:0 0 8px rgba(192,132,252,0.6)}
+.ni-c{flex:none;width:56px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0}
+.ni-cb{
+  width:52px;height:52px;border-radius:16px;
+  background:linear-gradient(135deg,var(--bg3),var(--bg4));
+  border:1px solid rgba(139,92,246,.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin-top:-22px;
+  transition:all .2s;
+}
+.ni-c.on .ni-cb{
+  background:linear-gradient(135deg,var(--purple2),var(--purple));
+  box-shadow:var(--neon-purple);
+  border-color:var(--purple);
+}
+
+/* ═══════════════════════════════
+   NEON COMPONENTS
+═══════════════════════════════ */
+.neon-card{
+  background:rgba(14,12,30,0.7);
+  border:1px solid rgba(168,85,247,0.25);
+  border-radius:18px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 0 20px rgba(168,85,247,0.05),inset 0 0 20px rgba(168,85,247,0.02);
+  transition:box-shadow .3s;
+}
+.neon-card:hover{box-shadow:0 0 25px rgba(168,85,247,0.12),inset 0 0 20px rgba(168,85,247,0.03)}
+
+.neon-green-card{
+  background:rgba(7,26,16,0.7);
+  border:1px solid rgba(0,230,118,0.25);
+  border-radius:18px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 0 20px rgba(0,230,118,0.05);
+}
+
+.sec-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(18px,3vw,22px);
+  letter-spacing:2px;color:var(--text);
+  margin:20px 0 14px;
+  display:flex;align-items:center;gap:10px;
+}
+.sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(to right,rgba(168,85,247,0.3),transparent)}
+
+/* HOME */
+.plan-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:12px}
+.plan-lbl{font-size:11px;color:var(--text3);margin-bottom:4px;letter-spacing:.5px;text-transform:uppercase}
+.plan-name-text{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(26px,5vw,32px);
+  letter-spacing:3px;color:var(--purple);
+  display:flex;align-items:center;gap:8px;
+  text-shadow:0 0 15px rgba(168,85,247,0.5);
+}
+.ic{width:17px;height:17px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text3);cursor:pointer;flex-shrink:0;font-style:italic;font-weight:700}
+.bot-btn{
+  background:linear-gradient(135deg,var(--purple2),#9333EA);
+  border:none;border-radius:20px;padding:9px 16px;
+  font-size:12px;font-weight:700;color:#fff;
+  font-family:'Noto Sans KR',sans-serif;cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+  box-shadow:var(--neon-purple);
+  white-space:nowrap;flex-shrink:0;
+  transition:all .2s;
+}
+.bot-btn:hover{box-shadow:0 0 15px rgba(168,85,247,0.9),0 0 30px rgba(168,85,247,0.4)}
+
+.bal-card{
+  background:linear-gradient(135deg,rgba(20,18,40,0.9),rgba(28,26,53,0.9));
+  border:1px solid rgba(168,85,247,0.3);
+  border-radius:20px;padding:22px;margin-bottom:20px;
+  position:relative;overflow:hidden;
+  box-shadow:0 0 30px rgba(168,85,247,0.08),inset 0 0 30px rgba(168,85,247,0.03);
+}
+.bal-card::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(168,85,247,0.12),transparent 70%)}
+.bal-card::after{content:'';position:absolute;bottom:-30px;left:-30px;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle,rgba(0,230,118,0.06),transparent 70%)}
+.bal-grid{display:grid;grid-template-columns:1fr 1fr;position:relative;z-index:1}
+.bal-l{border-right:1px solid rgba(168,85,247,0.15);padding-right:16px}
+.bal-r{padding-left:16px}
+.bal-lbl{font-size:11px;color:var(--text3);margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between}
+.bal-val{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,5vw,32px);letter-spacing:1px;color:var(--text);line-height:1.1}
+.bal-div{grid-column:1/-1;height:1px;background:linear-gradient(to right,transparent,rgba(168,85,247,0.2),transparent);margin:16px 0}
+.bal-bot{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between}
+.claim-btn{
+  background:linear-gradient(135deg,#00B85C,#00E676);
+  border:none;border-radius:12px;padding:12px 24px;
+  font-size:14px;font-weight:700;color:#001A0D;
+  font-family:'Noto Sans KR',sans-serif;cursor:pointer;
+  box-shadow:var(--neon-green);
+  transition:all .2s;
+}
+.claim-btn:hover{box-shadow:0 0 15px rgba(0,230,118,0.8),0 0 30px rgba(0,230,118,0.4)}
+
+.bot-st{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;padding:14px 18px;
+  text-align:center;font-size:13px;color:var(--text3);
+  margin-bottom:14px;cursor:pointer;transition:all .25s;font-weight:500;
+}
+.bot-st.on{
+  background:rgba(0,230,118,.06);
+  border-color:rgba(0,230,118,.3);color:var(--green);
+  box-shadow:0 0 15px rgba(0,230,118,0.1),inset 0 0 15px rgba(0,230,118,0.03);
+  text-shadow:0 0 8px rgba(0,230,118,0.5);
+}
+
+.act-row{display:flex;gap:8px;margin-bottom:16px;align-items:center}
+.act-btn{
+  flex:1;padding:14px;border:none;border-radius:13px;
+  font-size:14px;font-weight:700;
+  font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s;
+}
+.act-btn.on{
+  background:linear-gradient(135deg,#00C85A,#00E676);
+  color:#001A0D;box-shadow:var(--neon-green);
+}
+.act-btn.on:hover{box-shadow:0 0 15px rgba(0,230,118,0.8),0 0 30px rgba(0,230,118,0.4)}
+.act-btn.off{background:rgba(0,60,25,.3);border:1px solid rgba(0,150,60,.2);color:rgba(0,200,80,.5)}
+
+.pill-wrap{text-align:center;margin-bottom:16px}
+.pill{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(168,85,247,0.1);
+  border:1px solid rgba(168,85,247,.4);
+  border-radius:20px;padding:10px 20px;
+  font-size:13px;font-weight:700;color:var(--purple-light);cursor:pointer;
+  box-shadow:0 0 12px rgba(168,85,247,0.15);
+  transition:all .2s;
+}
+.pill:hover{box-shadow:var(--neon-purple);border-color:var(--purple)}
+
+.up-card{
+  background:rgba(20,18,40,0.6);
+  border:1px solid rgba(139,92,246,.25);
+  border-radius:16px;padding:16px 18px;
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;margin-bottom:18px;
+  transition:all .2s;
+}
+.up-card:hover{border-color:rgba(168,85,247,.5);box-shadow:0 0 15px rgba(168,85,247,0.1)}
+.up-ico{
+  width:42px;height:42px;border-radius:12px;
+  background:linear-gradient(135deg,var(--purple2),var(--purple));
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+  box-shadow:0 0 12px rgba(168,85,247,0.4);
+}
+
+.prog-hdr{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.prog-bar{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(139,92,246,0.12);
+  border-radius:10px;height:38px;
+  display:flex;align-items:center;
+  padding:0 14px;position:relative;overflow:hidden;margin-bottom:8px;
+}
+.prog-fill{
+  position:absolute;left:0;top:0;height:100%;
+  background:linear-gradient(90deg,rgba(124,58,237,0.4),rgba(168,85,247,0.7));
+  border-radius:10px;transition:width 1.5s ease;
+  box-shadow:2px 0 10px rgba(168,85,247,0.4);
+}
+.prog-lbls{position:relative;z-index:1;display:flex;justify-content:space-between;width:100%}
+.prog-lbls span{font-family:'Inter',sans-serif;font-size:13px;font-weight:600}
+.prog-hint{font-size:12px;color:var(--text3)}
+
+.hi{
+  background:rgba(14,12,30,0.6);
+  border:1px solid rgba(139,92,246,0.15);
+  border-radius:14px;padding:14px 16px;
+  margin-bottom:8px;
+  display:flex;justify-content:space-between;align-items:center;
+  transition:all .2s;
+}
+.hi:hover{border-color:rgba(168,85,247,0.3);box-shadow:0 0 12px rgba(168,85,247,0.06)}
+.ha{font-family:'Inter',sans-serif;font-size:15px;font-weight:700}
+.ha.done{color:var(--green);text-shadow:0 0 8px rgba(0,230,118,0.4)}
+.ha.wait{color:var(--purple-light);text-shadow:0 0 8px rgba(192,132,252,0.4)}
+
+/* PLANS */
+.pc{
+  background:rgba(14,12,30,0.7);
+  border:1px solid rgba(139,92,246,0.2);
+  border-radius:18px;padding:20px;margin-bottom:12px;
+  cursor:pointer;position:relative;overflow:hidden;
+  transition:all .25s;backdrop-filter:blur(8px);
+}
+.pc:hover{border-color:rgba(168,85,247,0.45);box-shadow:0 0 20px rgba(168,85,247,0.1),inset 0 0 20px rgba(168,85,247,0.02)}
+.pc.ft{border-color:rgba(168,85,247,.5);background:linear-gradient(135deg,rgba(28,21,53,0.85),rgba(34,26,64,0.85))}
+.pc.ft::after{content:'추천';position:absolute;top:14px;right:14px;background:linear-gradient(135deg,var(--purple2),var(--purple));color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;box-shadow:0 0 10px rgba(168,85,247,0.5);letter-spacing:.5px}
+.pct{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:3px;color:var(--purple-light);margin-bottom:5px;text-shadow:0 0 8px rgba(192,132,252,0.4)}
+.pcn{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;margin-bottom:12px}
+.pcr{font-family:'Bebas Neue',sans-serif;font-size:50px;color:var(--green);line-height:1;text-shadow:0 0 15px rgba(0,230,118,0.5)}
+.pcd{display:flex;flex-direction:column;gap:7px}
+.pdr{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.pdr:last-child{border-bottom:none}
+.pdk{font-size:12px;color:var(--text3)}
+.pdv{font-size:12px;font-weight:500;color:var(--text2)}
+.pcbtn{
+  width:100%;margin-top:16px;padding:13px;
+  background:rgba(168,85,247,.1);
+  border:1px solid rgba(168,85,247,.35);
+  border-radius:12px;color:var(--purple-light);
+  font-size:14px;font-weight:700;
+  font-family:'Noto Sans KR',sans-serif;cursor:pointer;
+  transition:all .2s;letter-spacing:.3px;
+}
+.pcbtn:hover{background:rgba(168,85,247,.2);box-shadow:0 0 12px rgba(168,85,247,0.2)}
+.pc.ft .pcbtn{background:linear-gradient(135deg,var(--purple2),var(--purple));border:none;color:#fff;box-shadow:0 0 12px rgba(168,85,247,0.4)}
+
+/* CALC */
+.cc{
+  background:rgba(14,12,30,0.7);
+  border:1px solid rgba(139,92,246,0.2);
+  border-radius:18px;padding:22px;margin-bottom:16px;
+  backdrop-filter:blur(10px);
+}
+.cl{font-size:11px;color:var(--text3);margin-bottom:7px;letter-spacing:.5px;text-transform:uppercase}
+.ci{
+  width:100%;background:rgba(255,255,255,0.04);
+  border:1px solid rgba(139,92,246,0.2);
+  border-radius:12px;padding:13px 16px;
+  font-size:22px;color:var(--text);
+  font-family:'Inter',sans-serif;font-weight:700;
+  outline:none;margin-bottom:16px;transition:all .2s;
+}
+.ci:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(168,85,247,0.15)}
+.rsel{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.rb{
+  flex:1;min-width:56px;padding:9px 3px;text-align:center;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;font-size:11px;color:var(--text2);
+  cursor:pointer;transition:all .2s;line-height:1.5;
+}
+.rb.on{background:rgba(0,230,118,.1);border-color:rgba(0,230,118,.4);color:var(--green);font-weight:700;box-shadow:0 0 8px rgba(0,230,118,0.15);text-shadow:0 0 6px rgba(0,230,118,0.4)}
+.csl{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;background:rgba(255,255,255,.08);outline:none;margin-bottom:18px;cursor:pointer}
+.csl::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--green);border:3px solid var(--bg);box-shadow:0 0 10px rgba(0,230,118,.6)}
+.cres{background:rgba(0,0,0,0.2);border-radius:12px;padding:16px;border:1px solid rgba(139,92,246,0.1)}
+.crow{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.crow:last-child{border-bottom:none}
+.ck{font-size:13px;color:var(--text2)}
+.cv{font-family:'Inter',sans-serif;font-size:14px;font-weight:700}
+.cv.g{color:var(--green);text-shadow:0 0 8px rgba(0,230,118,0.3)}
+.cv.p{color:var(--purple-light);text-shadow:0 0 8px rgba(192,132,252,0.3)}
+.notice{background:rgba(168,85,247,.05);border:1px solid rgba(168,85,247,.15);border-radius:14px;padding:14px 16px;font-size:12px;color:var(--text2);line-height:1.9}
+
+/* PORTFOLIO */
+.av-card{
+  background:linear-gradient(135deg,rgba(7,26,16,0.85),rgba(9,31,20,0.85));
+  border:1px solid rgba(0,230,118,.25);
+  border-radius:18px;padding:20px;margin-bottom:16px;
+  box-shadow:0 0 20px rgba(0,230,118,0.06);
+}
+.av-lbl{font-size:10px;color:var(--green);letter-spacing:2px;font-weight:700;text-transform:uppercase;margin-bottom:6px;text-shadow:0 0 8px rgba(0,230,118,0.5)}
+.av-amt{font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,5vw,36px);letter-spacing:1px;text-shadow:0 0 10px rgba(0,230,118,0.2)}
+.av-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.inv-card{background:rgba(14,12,30,0.7);border:1px solid rgba(139,92,246,0.2);border-radius:16px;padding:18px;margin-bottom:10px;transition:all .2s}
+.inv-card:hover{border-color:rgba(168,85,247,0.35);box-shadow:0 0 15px rgba(168,85,247,0.06)}
+.inv-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.inv-badge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.5px}
+.inv-badge.on{background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.25);text-shadow:0 0 6px rgba(0,230,118,0.4)}
+.inv-badge.off{background:rgba(168,85,247,.1);color:var(--purple-light);border:1px solid rgba(168,85,247,.25)}
+.inv-p{height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;margin-top:10px}
+.inv-pf{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--purple2),var(--purple));box-shadow:1px 0 8px rgba(168,85,247,0.5)}
+.fg2{margin-bottom:14px}
+.fl2{font-size:11px;color:var(--text3);margin-bottom:7px;display:block;text-transform:uppercase;letter-spacing:.5px}
+.fi2,.fs{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(139,92,246,0.2);border-radius:12px;padding:13px 16px;font-size:15px;color:var(--text);font-family:'Noto Sans KR',sans-serif;outline:none;transition:all .2s}
+.fi2:focus,.fs:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(168,85,247,0.15)}
+.fs{-webkit-appearance:none;cursor:pointer}
+.subbtn{width:100%;padding:14px;background:linear-gradient(135deg,#00B85C,#00E676);border:none;border-radius:13px;color:#001A0D;font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-top:6px;box-shadow:var(--neon-green);transition:all .2s}
+.subbtn:hover{box-shadow:0 0 20px rgba(0,230,118,0.7),0 0 40px rgba(0,230,118,0.3)}
+
+/* ADMIN */
+.adcard{background:linear-gradient(135deg,rgba(15,11,30,0.85),rgba(20,15,40,0.85));border:1px solid rgba(139,92,246,.3);border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:0 0 20px rgba(139,92,246,0.06)}
+.adlbl{font-size:10px;color:var(--purple-light);letter-spacing:2px;font-weight:700;text-transform:uppercase;margin-bottom:6px;text-shadow:0 0 8px rgba(192,132,252,0.5)}
+.adtotal{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,4vw,30px);letter-spacing:1px;text-shadow:0 0 10px rgba(168,85,247,0.2)}
+.adstats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.adstat{background:rgba(14,12,30,0.7);border:1px solid rgba(139,92,246,0.2);border-radius:14px;padding:14px}
+.adslbl{font-size:11px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.adsval{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px}
+.adbtns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.adbtn{padding:13px;border-radius:13px;font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s;letter-spacing:.3px}
+.adbtn.p{background:linear-gradient(135deg,var(--purple2),var(--purple));border:none;color:#fff;box-shadow:0 0 12px rgba(168,85,247,0.3)}
+.adbtn.p:hover{box-shadow:var(--neon-purple)}
+.adbtn.s{background:transparent;border:1px solid rgba(168,85,247,.35);color:var(--purple-light)}
+.icard{background:rgba(14,12,30,0.7);border:1px solid rgba(139,92,246,0.2);border-radius:16px;padding:16px;margin-bottom:10px;transition:all .2s}
+.icard:hover{border-color:rgba(168,85,247,0.35);box-shadow:0 0 15px rgba(168,85,247,0.06)}
+.itop{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.iinfo{display:flex;align-items:center;gap:12px}
+.iav{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--purple2),var(--purple));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0;box-shadow:0 0 10px rgba(168,85,247,0.3)}
+.imetrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.imet{background:rgba(0,0,0,0.2);border-radius:10px;padding:10px}
+.iml{font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.3px}
+.imv{font-family:'Inter',sans-serif;font-size:12px;font-weight:700}
+.distbtn{width:100%;margin-top:12px;padding:11px;background:rgba(0,230,118,.07);border:1px solid rgba(0,230,118,.25);border-radius:10px;color:var(--green);font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s;text-shadow:0 0 6px rgba(0,230,118,0.3)}
+.distbtn:hover{background:rgba(0,230,118,.14);box-shadow:0 0 12px rgba(0,230,118,0.15)}
+.distbtn:disabled{opacity:.4;cursor:default;box-shadow:none}
+
+/* MISC */
+.modal-wrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-wrap.open{display:flex}
+.modal-box{background:rgba(14,12,30,0.95);border:1px solid rgba(168,85,247,.4);border-radius:24px;padding:36px 28px;text-align:center;max-width:320px;width:90%;box-shadow:var(--neon-border-purple),0 20px 60px rgba(0,0,0,0.5)}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;margin-bottom:10px;text-shadow:0 0 10px rgba(168,85,247,0.3)}
+.modal-sub{font-size:13px;color:var(--text2);line-height:1.8;white-space:pre-line}
+.modal-close{margin-top:22px;padding:12px 36px;background:linear-gradient(135deg,var(--purple2),var(--purple));border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;box-shadow:0 0 12px rgba(168,85,247,0.3)}
+
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(14px);background:rgba(14,12,30,0.95);border:1px solid rgba(168,85,247,.4);border-radius:12px;padding:11px 20px;font-size:13px;color:var(--text);font-weight:500;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;max-width:90%;box-shadow:0 0 15px rgba(168,85,247,0.15)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(min-width:768px){.toast{bottom:70px}}
+
+.live{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--green);font-weight:700;margin-bottom:14px;text-shadow:0 0 8px rgba(0,230,118,0.4);letter-spacing:.5px;text-transform:uppercase}
+.ldot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(0,230,118,0.8);animation:bl 1.5s ease-in-out infinite}
+@keyframes bl{0%,100%{opacity:1;box-shadow:0 0 8px rgba(0,230,118,0.8)}50%{opacity:.4;box-shadow:0 0 3px rgba(0,230,118,0.4)}}
+
+.div{height:1px;background:linear-gradient(to right,transparent,rgba(168,85,247,0.2),transparent);margin:20px 0}
+.psub{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.8}
+.row-kv{display:flex;justify-content:space-between;margin-bottom:7px}
+.kv-k{font-size:12px;color:var(--text3)}
+.kv-v{font-size:12px;font-weight:500;color:var(--text)}
 </style>
 </head>
 <body>
 
+<!-- SPIDER WEB CANVAS -->
+<canvas id="web-canvas"></canvas>
+
+<!-- AUTH -->
+<div id="auth-wrap">
+  <div class="auth-content">
+    <div class="vbanner" id="vbanner">
+      <div class="vbanner-title">이메일 인증 완료</div>
+      <div class="vbanner-sub" id="vsub">로그인하여 SpiderBOT을 이용하세요</div>
+    </div>
+    <div class="auth-logo">
+      <div class="auth-logo-name">SpiderBOT</div>
+      <div class="auth-logo-sub">AI Trading Bot Platform</div>
+    </div>
+    <div class="auth-card">
+      <div class="tab-row">
+        <div class="tab on" id="tl" onclick="atab('login')">로그인</div>
+        <div class="tab" id="tr" onclick="atab('reg')">회원가입</div>
+      </div>
+      <div class="aerr" id="aerr"></div>
+      <div class="aok"  id="aok"></div>
+
+      <!-- LOGIN -->
+      <div id="fl">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:5px;text-shadow:0 0 10px rgba(168,85,247,0.3)">다시 오셨군요</div>
+        <div style="font-size:13px;color:var(--text3);margin-bottom:20px">아이디와 비밀번호로 로그인하세요</div>
+        <div class="fg"><label class="fl">아이디</label><input class="fi" type="text" id="lu" placeholder="아이디 입력" autocapitalize="none" autocomplete="username"></div>
+        <div class="fg"><label class="fl">비밀번호</label>
+          <div class="pw-wrap"><input class="fi" type="password" id="lp" placeholder="비밀번호 입력" autocomplete="current-password" style="padding-right:44px"><button class="pw-eye" onclick="tp('lp',this)">보기</button></div>
+        </div>
+        <button class="abtn" id="lbtn" onclick="doLogin()">로그인</button>
+        <button class="lbtn" onclick="atab('reg')">계정이 없으신가요? 회원가입</button>
+      </div>
+
+      <!-- REGISTER -->
+      <div id="freg" style="display:none">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:5px;text-shadow:0 0 10px rgba(168,85,247,0.3)">계정 만들기</div>
+        <div style="font-size:13px;color:var(--text3);margin-bottom:20px">간단하게 가입하고 투자를 시작하세요</div>
+        <div class="fg"><label class="fl">아이디</label><input class="fi" type="text" id="ru" placeholder="영문, 숫자, 밑줄 / 3~20자" autocapitalize="none" oninput="cr()"></div>
+        <div class="fg"><label class="fl">이메일</label><input class="fi" type="email" id="re" placeholder="example@email.com" autocapitalize="none"></div>
+        <div class="fg"><label class="fl">비밀번호</label>
+          <div class="pw-wrap"><input class="fi" type="password" id="rp" placeholder="특수문자 포함 8자 이상" autocomplete="new-password" style="padding-right:44px" oninput="cr()"><button class="pw-eye" onclick="tp('rp',this)">보기</button></div>
+        </div>
+        <div class="pw-rules">
+          <div class="pw-rules-title">조건 확인</div>
+          <div class="rule no" id="r1">비밀번호 8자 이상</div>
+          <div class="rule no" id="r2">특수문자 포함 (!@#$ 등)</div>
+          <div class="rule no" id="r3">아이디 3~20자</div>
+          <div class="rule no" id="r4">아이디 영문, 숫자, 밑줄만</div>
+        </div>
+        <button class="abtn" id="rbtn" onclick="doReg()">회원가입 &amp; 인증 메일 발송</button>
+        <button class="lbtn" onclick="atab('login')">이미 계정이 있으신가요? 로그인</button>
+      </div>
+
+      <!-- RESEND -->
+      <div id="frs" style="display:none">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:5px">인증 메일 재발송</div>
+        <div style="font-size:13px;color:var(--text3);margin-bottom:20px">가입 이메일을 입력하면 다시 발송합니다</div>
+        <div class="fg"><label class="fl">이메일</label><input class="fi" type="email" id="rse" placeholder="가입 이메일 입력"></div>
+        <button class="abtn" id="rsbtn" onclick="doResend()">인증 메일 재발송</button>
+        <button class="lbtn" onclick="atab('login')">로그인으로 돌아가기</button>
+      </div>
+    </div>
+    <div id="rslink" style="margin-top:14px;text-align:center">
+      <button class="lbtn" onclick="atab('resend')" style="display:inline">인증 메일을 받지 못하셨나요?</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
 <div class="topbar">
   <div class="t-brand">SpiderBOT</div>
-  <div class="t-right"><span id="t-user">GUEST</span></div>
+  <div class="t-right">
+    <div class="tic" onclick="showToast('언어 설정')">KOR</div>
+    <div class="tic" onclick="showToast('텔레그램 채널')">TG</div>
+    <span id="t-user"></span>
+    <button id="logout-btn" onclick="doLogout()">로그아웃</button>
+  </div>
 </div>
 
 <div class="app-wrap">
-  <div id="p-ico" class="page">
-    <div class="neon-card">
-      <h2 style="color:var(--purple-light);margin-bottom:8px;">Crypto ICO Platform</h2>
-      <p style="color:var(--text2);font-size:14px">준비 중인 신규 암호화폐 분양 및 ICO 시스템 거래소 창입니다. 다음 업데이트를 기대해 주세요.</p>
+
+<!-- HOME -->
+<div class="page on" id="page-home">
+  <div class="plan-row">
+    <div>
+      <div class="plan-lbl">현재 플랜</div>
+      <div class="plan-name-text"><span id="cur-plan">플랜 없음</span><div class="ic">i</div></div>
     </div>
+    <button class="bot-btn" onclick="showToast('봇 작동 방식 안내')">봇 작동 방식 <div class="ic" style="background:rgba(255,255,255,.12);color:#fff">i</div></button>
   </div>
 
-  <div id="p-referral" class="page">
-    <div class="neon-card">
-      <h2 style="color:var(--purple-light);margin-bottom:8px;">Referral System</h2>
-      <p style="color:var(--text2);font-size:14px">추천인 보너스 및 파트너 관리 대시보드 구역입니다. 요율 산식이 확정되는 대로 정밀 정산 로직이 연동됩니다.</p>
-    </div>
-  </div>
-
-  <div id="p-home" class="page on">
-    <div class="neon-card">
-      <div style="font-size:12px;color:var(--text3)">TOTAL BALANCE</div>
-      <div style="font-size:32px;font-weight:800;color:#fff;margin:4px 0">$0.00</div>
-    </div>
-    <h3 style="margin:16px 0 8px">AI TRADING PLANS</h3>
-    <div class="neon-card"><h4>Spider Basic Plan</h4><p style="color:var(--green)">Daily +1.2%</p></div>
-  </div>
-
-  <div id="p-calc" class="page">
-    <div class="neon-card">
-      <h3>수익률 계산기</h3>
-      <p style="color:var(--text2);font-size:14px">원금에 따른 예상 수수료 및 복리 이자를 산출하는 유틸리티 공간입니다.</p>
-    </div>
-  </div>
-
-  <div id="p-profile" class="page">
-    <div class="neon-card" style="border-color:var(--purple)">
-      <h3 style="color:var(--purple-light);margin-bottom:16px;letter-spacing:1px">USER ACCOUNT INFO</h3>
-      
-      <div style="display:flex;flex-direction:column;gap:12px;font-size:14px">
-        <div style="display:flex;justify-content:between;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:6px">
-          <span style="color:var(--text3);width:120px">사용자 ID (고유)</span>
-          <span id="prof-id-num" style="color:#fff;font-weight:700">1029485736</span>
+  <div class="bal-card">
+    <div class="bal-grid">
+      <div class="bal-l">
+        <div class="bal-lbl">잔액</div>
+        <div class="bal-val" id="hbal">0 원</div>
+      </div>
+      <div class="bal-r">
+        <div class="bal-lbl">수익 (24시간) <span style="color:var(--purple-light);cursor:pointer;font-size:14px" onclick="showToast('갱신 중...')">↺</span></div>
+        <div class="bal-val" style="color:var(--green);text-shadow:0 0 10px rgba(0,230,118,0.3)" id="hpft">0 원</div>
+      </div>
+      <div class="bal-div"></div>
+      <div class="bal-bot">
+        <div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">청구할 금액</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px">0 원</div>
         </div>
-        <div style="display:flex;justify-content:between;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:6px">
-          <span style="color:var(--text3);width:120px">로그인 아이디</span>
-          <span id="prof-username" style="color:var(--text)">SpiderUser</span>
-        </div>
-        <div style="display:flex;justify-content:between;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:6px">
-          <span style="color:var(--text3);width:120px">이메일 주소</span>
-          <span id="prof-email" style="color:var(--text2)">loading...</span>
-        </div>
-        <div style="display:flex;justify-content:between;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:6px">
-          <span style="color:var(--text3);width:120px">가입 일자</span>
-          <span id="prof-date" style="color:var(--text2)">2026-05-21</span>
-        </div>
-        <div style="display:flex;justify-content:between;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:6px">
-          <span style="color:var(--text3);width:120px">현재 가동 플랜</span>
-          <span id="prof-plan" style="color:var(--purple-light);font-weight:700">VIP Premium</span>
-        </div>
-        <div style="display:flex;justify-content:between;padding-bottom:4px">
-          <span style="color:var(--text3);width:120px">누적 총 수익</span>
-          <span id="prof-profit" style="color:var(--green);font-weight:700">$0.00</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="claim-btn" onclick="showModal('수익 청구','출금 신청이 접수되었습니다.\n영업일 1~2일 내 처리됩니다.')">청구</button>
+          <div class="ic">i</div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="neon-card">
-      <h3 style="font-size:16px;color:#fff;margin-bottom:4px">Crypto Transactions</h3>
-      <p style="font-size:11px;color:var(--text3);margin-bottom:12px">모든 입출금 내역은 암호화폐 기반 TxID 체인망으로만 기록됩니다.</p>
-      
-      <table class="crypto-table">
-        <thead>
-          <tr>
-            <th>구분</th>
-            <th>자산/금액</th>
-            <th>TxID 거래 해시 주소</th>
-            <th>상태</th>
-          </tr>
-        </thead>
-        <tbody id="tx-history-rows">
-          <tr>
-            <td><span class="status-badge in">입금</span></td>
-            <td>0.045 BTC</td>
-            <td style="font-family:monospace;color:var(--text3)">0x7a9d...2e4f</td>
-            <td style="color:var(--green)">승인 완료</td>
-          </tr>
-          <tr>
-            <td><span class="status-badge out">출금</span></td>
-            <td>1,200 USDT</td>
-            <td style="font-family:monospace;color:var(--text3)">0x3b8c...91a0</td>
-            <td style="color:var(--text3)">대기 중</td>
-          </tr>
-        </tbody>
-      </table>
+  <div class="sec-title">AI 기반 자동 거래</div>
+  <div class="bot-st on" id="botst" onclick="toggleBot()"><span id="bottxt">봇 활성 — 실시간 운용 중</span></div>
+  <div class="act-row">
+    <button class="act-btn on" id="bdep" onclick="sact('dep')">입금</button>
+    <button class="act-btn off" id="bwd"  onclick="sact('wd')">출금</button>
+    <div class="ic" style="width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(139,92,246,.15)">i</div>
+  </div>
+  <div class="pill-wrap">
+    <div class="pill" onclick="goPage('plans',document.getElementById('ni-plans'))">수익 플랜 <div class="ic" style="background:rgba(168,85,247,.15)">i</div></div>
+  </div>
+  <div class="up-card" onclick="goPage('plans',document.getElementById('ni-plans'))">
+    <div class="up-ico">G</div>
+    <div style="flex:1">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:4px">업그레이드 <span style="color:var(--purple-light);font-weight:700;text-shadow:0 0 8px rgba(192,132,252,0.4)">Gold 플랜</span></div>
+      <div style="font-size:12px;color:var(--green);font-weight:600;text-shadow:0 0 6px rgba(0,230,118,0.4)">+6% 일일 / 60,000원 하루</div>
     </div>
+    <div style="color:var(--text3);font-size:20px">›</div>
+  </div>
+  <div style="margin-bottom:18px">
+    <div class="prog-hdr"><span style="font-weight:600">Gold 플랜까지 <span style="color:var(--green);text-shadow:0 0 8px rgba(0,230,118,0.4)">25%</span></span><span style="color:var(--text3)">100%</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="progf" style="width:0%"></div><div class="prog-lbls"><span>500,000원</span><span>1,000,000원</span></div></div>
+    <div class="prog-hint">Gold 플랜이 더 높은 일일 수익을 해제합니다</div>
+  </div>
+  <div class="sec-title">최근 봇 거래</div>
+  <div id="trades"></div>
+</div>
+
+<!-- PLANS -->
+<div class="page" id="page-plans">
+  <p class="psub">모든 플랜은 일 수익률을 보장하며 수동 수익분배 방식으로 운영됩니다.</p>
+  <div class="pc" onclick="selPlan('Starter','2%','10,000원','100,000원')"><div class="pct">01 · STARTER</div><div class="pcn">스타터 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr">2%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">10,000원 ~ 100,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">200원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">1,400원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">6,000원</span></div></div><button class="pcbtn">스타터 신청</button></div>
+  <div class="pc" onclick="selPlan('Bronze','2.5%','100,000원','500,000원')"><div class="pct">02 · BRONZE</div><div class="pcn">브론즈 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr">2.5%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">100,000원 ~ 500,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">2,500원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">17,500원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">75,000원</span></div></div><button class="pcbtn">브론즈 신청</button></div>
+  <div class="pc" onclick="selPlan('Silver','4%','500,000원','1,000,000원')"><div class="pct">03 · SILVER</div><div class="pcn">실버 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr">4%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">500,000원 ~ 1,000,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">20,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">140,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">600,000원</span></div></div><button class="pcbtn">실버 신청</button></div>
+  <div class="pc ft" onclick="selPlan('Gold','6%','1,000,000원','5,000,000원')"><div class="pct">04 · GOLD</div><div class="pcn">골드 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr">6%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">1,000,000원 ~ 5,000,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">60,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">420,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">1,800,000원</span></div></div><button class="pcbtn">골드 신청</button></div>
+  <div class="pc" style="border-color:rgba(200,180,255,.3);background:rgba(27,21,53,0.75)" onclick="selPlan('Platinum','8%','5,000,000원','10,000,000원')"><div class="pct" style="color:#C8B4FF">05 · PLATINUM</div><div class="pcn">플래티넘 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr" style="color:#C8B4FF;text-shadow:0 0 15px rgba(200,180,255,0.5)">8%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">5,000,000원 ~ 10,000,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">400,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">2,800,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">12,000,000원</span></div></div><button class="pcbtn" style="border-color:rgba(200,180,255,.3);color:#C8B4FF">플래티넘 신청</button></div>
+  <div class="pc" style="border-color:rgba(100,220,255,.3);background:rgba(13,30,42,0.75)" onclick="selPlan('Diamond','9.5%','10,000,000원','25,000,000원')"><div class="pct" style="color:#64DCFF">06 · DIAMOND</div><div class="pcn">다이아몬드 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr" style="color:#64DCFF;text-shadow:0 0 15px rgba(100,220,255,0.5)">9.5%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">10,000,000원 ~ 25,000,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">950,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">6,650,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">28,500,000원</span></div></div><button class="pcbtn" style="border-color:rgba(100,220,255,.3);color:#64DCFF">다이아몬드 신청</button></div>
+  <div class="pc" style="border-color:rgba(255,200,80,.3);background:rgba(30,22,8,0.75)" onclick="selPlan('Royal','11%','25,000,000원','75,000,000원')"><div class="pct" style="color:#FFC850">07 · ROYAL</div><div class="pcn">로열 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr" style="color:#FFC850;text-shadow:0 0 15px rgba(255,200,80,0.5)">11%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">25,000,000원 ~ 75,000,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">2,750,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">19,250,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">82,500,000원</span></div></div><button class="pcbtn" style="border-color:rgba(255,200,80,.3);color:#FFC850">로열 신청</button></div>
+  <div class="pc" style="border-color:rgba(255,120,60,.3);background:rgba(30,16,8,0.75)" onclick="selPlan('Imperial','12.5%','75,000,000원','100,000,000원')"><div class="pct" style="color:#FF7840">08 · IMPERIAL</div><div class="pcn">임페리얼 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr" style="color:#FF7840;text-shadow:0 0 15px rgba(255,120,60,0.5)">12.5%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">75,000,000원 ~ 100,000,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">9,375,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">65,625,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">281,250,000원</span></div></div><button class="pcbtn" style="border-color:rgba(255,120,60,.3);color:#FF7840">임페리얼 신청</button></div>
+  <div class="pc" style="border-color:rgba(255,80,100,.3);background:rgba(30,8,16,0.75)" onclick="selPlan('Dynasty','14%','100,000,000원','150,000,000원')"><div class="pct" style="color:#FF5064">09 · DYNASTY</div><div class="pcn">다이너스티 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr" style="color:#FF5064;text-shadow:0 0 15px rgba(255,80,100,0.5)">14%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">100,000,000원 ~ 150,000,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">14,000,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">98,000,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">420,000,000원</span></div></div><button class="pcbtn" style="border-color:rgba(255,80,100,.3);color:#FF5064">다이너스티 신청</button></div>
+  <div class="pc" style="border-color:rgba(0,230,118,.35);background:rgba(7,26,16,0.75)" onclick="selPlan('Legacy','15%','150,000,000원~','무한')"><div class="pct" style="color:var(--green)">10 · LEGACY</div><div class="pcn">레거시 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr">15%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">150,000,000원 ~ 무한</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">22,500,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">157,500,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">675,000,000원</span></div></div><button class="pcbtn">레거시 VIP 신청</button></div>
+</div>
+
+<!-- CALCULATOR -->
+<div class="page" id="page-calc">
+  <p class="psub">투자 금액과 기간을 입력하면 보장 수익을 실시간으로 계산합니다.</p>
+  <div class="cc">
+    <div class="cl">투자 금액 (원)</div>
+    <input class="ci" type="number" id="camt" value="500000" oninput="calc()" inputmode="numeric">
+    <div class="cl">일 수익률 선택</div>
+    <div class="rsel">
+      <div class="rb" onclick="sr(this,2)">2%<br><span style="font-size:9px;color:var(--text3)">Starter</span></div>
+      <div class="rb" onclick="sr(this,2.5)">2.5%<br><span style="font-size:9px;color:var(--text3)">Bronze</span></div>
+      <div class="rb on" onclick="sr(this,4)">4%<br><span style="font-size:9px">Silver</span></div>
+      <div class="rb" onclick="sr(this,6)">6%<br><span style="font-size:9px;color:var(--text3)">Gold</span></div>
+      <div class="rb" onclick="sr(this,8)">8%<br><span style="font-size:9px;color:var(--text3)">Plat</span></div>
+      <div class="rb" onclick="sr(this,9.5)">9.5%<br><span style="font-size:9px;color:var(--text3)">Dia</span></div>
+      <div class="rb" onclick="sr(this,11)">11%<br><span style="font-size:9px;color:var(--text3)">Royal</span></div>
+      <div class="rb" onclick="sr(this,12.5)">12.5%<br><span style="font-size:9px;color:var(--text3)">Imp</span></div>
+      <div class="rb" onclick="sr(this,14)">14%<br><span style="font-size:9px;color:var(--text3)">Dyn</span></div>
+      <div class="rb" onclick="sr(this,15)">15%<br><span style="font-size:9px;color:var(--text3)">Leg</span></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.5px"><span>운용 기간</span><span id="dlbl" style="color:var(--green);font-weight:700;text-shadow:0 0 6px rgba(0,230,118,0.4)">30일</span></div>
+    <input class="csl" type="range" min="1" max="365" value="30" step="1" id="cdays" oninput="document.getElementById('dlbl').textContent=this.value+'일';calc()">
+    <div class="cres">
+      <div class="crow"><span class="ck">일 수익금</span><span class="cv g" id="rday">—</span></div>
+      <div class="crow"><span class="ck">주간 수익금</span><span class="cv g" id="rwk">—</span></div>
+      <div class="crow"><span class="ck">월간 수익금</span><span class="cv g" id="rmo">—</span></div>
+      <div class="crow"><span class="ck">기간 총 수익</span><span class="cv p" id="rtot">—</span></div>
+      <div class="crow"><span class="ck">원금 + 수익</span><span class="cv p" id="rfin">—</span></div>
+      <div class="crow"><span class="ck">총 수익률</span><span class="cv g" id="rpct">—</span></div>
+    </div>
+  </div>
+  <div class="notice">보장 수익률 기준으로 산출됩니다.<br>수익금은 매일 오전 10시 수동 분배됩니다.<br>실제 수익은 플랜 약정에 따라 지급됩니다.</div>
+</div>
+
+<!-- PORTFOLIO -->
+<!-- ICO (준비 중) -->
+<div class="page" id="page-ico">
+  <div style="text-align:center;padding:60px 20px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;color:var(--purple-light);text-shadow:var(--neon-purple);margin-bottom:16px">ICO</div>
+    <div style="font-size:15px;color:var(--text2);line-height:1.8;margin-bottom:12px">ICO 서비스 준비 중입니다.</div>
+    <div style="font-size:13px;color:var(--text3)">오픈 일정은 추후 공지됩니다.</div>
+    <div style="margin-top:32px;height:1px;background:linear-gradient(to right,transparent,rgba(168,85,247,0.3),transparent)"></div>
   </div>
 </div>
 
-<div class="bnav">
-  <div class="ni" onclick="goTab('ico')"><span class="ni-ico">🪙</span><span class="ni-lbl">ICO</span></div>
-  <div class="ni" onclick="goTab('referral')"><span class="ni-ico">🤝</span><span class="ni-lbl">레퍼럴</span></div>
-  <div class="ni on" onclick="goTab('home')"><span class="ni-ico">🕸️</span><span class="ni-lbl">홈</span></div>
-  <div class="ni" onclick="goTab('calc')"><span class="ni-ico">📊</span><span class="ni-lbl">계산기</span></div>
-  <div class="ni" onclick="goTab('profile')"><span class="ni-ico">👤</span><span class="ni-lbl">프로필</span></div>
+<!-- REFERRAL (준비 중) -->
+<div class="page" id="page-ref">
+  <div style="text-align:center;padding:60px 20px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;color:var(--green);text-shadow:var(--neon-green);margin-bottom:16px">REFERRAL</div>
+    <div style="font-size:15px;color:var(--text2);line-height:1.8;margin-bottom:12px">추천인 시스템 준비 중입니다.</div>
+    <div style="font-size:13px;color:var(--text3)">추천 보너스 정책은 추후 공지됩니다.</div>
+    <div style="margin-top:32px;height:1px;background:linear-gradient(to right,transparent,rgba(0,230,118,0.3),transparent)"></div>
+  </div>
 </div>
 
+<!-- PROFILE -->
+<div class="page" id="page-profile">
+
+  <!-- 프로필 헤더 -->
+  <div style="text-align:center;padding:28px 0 24px">
+    <div id="pf-avatar" style="width:80px;height:80px;border-radius:24px;background:linear-gradient(135deg,var(--purple2),var(--purple));display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:34px;color:#fff;margin:0 auto 14px;box-shadow:0 0 24px rgba(168,85,247,0.5),0 0 48px rgba(168,85,247,0.2)">?</div>
+    <div id="pf-username" style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;text-shadow:0 0 12px rgba(168,85,247,0.4)">-</div>
+    <div id="pf-plan" style="display:inline-block;margin-top:7px;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.3);color:var(--purple-light);letter-spacing:1px;text-shadow:0 0 8px rgba(192,132,252,0.4)">플랜 없음</div>
+  </div>
+
+  <!-- 사용자 정보 -->
+  <div class="sec-title">계정 정보</div>
+  <div style="background:rgba(14,12,30,0.7);border:1px solid rgba(139,92,246,0.2);border-radius:18px;padding:6px 0;margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.05)">
+      <span style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">사용자 ID</span>
+      <span id="pf-uid" style="font-family:'Inter',sans-serif;font-size:14px;font-weight:700;color:var(--purple-light);text-shadow:0 0 8px rgba(192,132,252,0.3)">-</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.05)">
+      <span style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">아이디</span>
+      <span id="pf-id" style="font-size:14px;font-weight:500">-</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.05)">
+      <span style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">이메일</span>
+      <span id="pf-email" style="font-size:13px;font-weight:500;color:var(--text2)">-</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px">
+      <span style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">가입일</span>
+      <span id="pf-date" style="font-size:14px;font-weight:500">-</span>
+    </div>
+  </div>
+
+  <!-- 수익 현황 -->
+  <div class="sec-title">수익 현황</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+    <div style="background:rgba(7,26,16,0.7);border:1px solid rgba(0,230,118,0.2);border-radius:16px;padding:18px;box-shadow:0 0 15px rgba(0,230,118,0.04)">
+      <div style="font-size:10px;color:var(--green);letter-spacing:1.5px;font-weight:700;text-transform:uppercase;margin-bottom:8px;text-shadow:0 0 6px rgba(0,230,118,0.4)">총 수익</div>
+      <div id="pf-profit" style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--text);text-shadow:0 0 8px rgba(0,230,118,0.15)">0 원</div>
+    </div>
+    <div style="background:rgba(14,12,30,0.7);border:1px solid rgba(139,92,246,0.2);border-radius:16px;padding:18px">
+      <div style="font-size:10px;color:var(--purple-light);letter-spacing:1.5px;font-weight:700;text-transform:uppercase;margin-bottom:8px;text-shadow:0 0 6px rgba(192,132,252,0.4)">현재 잔액</div>
+      <div id="pf-balance" style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px">0 원</div>
+    </div>
+  </div>
+
+  <!-- 거래 내역 -->
+  <div class="sec-title">입출금 거래내역</div>
+  <div style="background:rgba(14,12,30,0.5);border:1px solid rgba(139,92,246,0.15);border-radius:16px;padding:18px;margin-bottom:14px">
+    <div style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.7">모든 입출금 거래는 <span style="color:var(--green);text-shadow:0 0 6px rgba(0,230,118,0.4)">암호화폐</span>로만 이루어집니다.</div>
+    <div id="pf-txlist"></div>
+  </div>
+
+  <!-- 버튼 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+    <button style="padding:13px;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.25);border-radius:13px;color:var(--green);font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;text-shadow:0 0 6px rgba(0,230,118,0.3);transition:all .2s" onclick="showToast('입금 기능 준비 중')">입금 신청</button>
+    <button style="padding:13px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.25);border-radius:13px;color:var(--purple-light);font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;text-shadow:0 0 6px rgba(192,132,252,0.3);transition:all .2s" onclick="showToast('출금 기능 준비 중')">출금 신청</button>
+  </div>
+
+  <button onclick="doLogout()" style="width:100%;padding:13px;background:transparent;border:1px solid rgba(255,59,92,0.25);border-radius:13px;color:rgba(255,100,120,0.7);font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s">로그아웃</button>
+</div>
+
+<!-- ADMIN -->
+<div class="page" id="page-admin">
+  <div style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.25);border-radius:13px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--purple-light);font-weight:600;letter-spacing:.5px;text-shadow:0 0 8px rgba(192,132,252,0.3)">관리자 전용 패널 — 수동 분배 시스템</div>
+  <div class="adcard"><div class="adlbl">오늘 총 분배 예정액</div><div class="adtotal">12,847,500 원</div><div style="font-size:12px;color:var(--text3);margin-top:4px">활성 투자자 1,284명 · 2025.07.13</div></div>
+  <div class="adstats">
+    <div class="adstat"><div class="adslbl">미분배 대기</div><div class="adsval" style="color:var(--red);text-shadow:0 0 8px rgba(255,59,92,0.4)">23명</div><div style="font-size:11px;color:var(--text3);margin-top:3px">처리 필요</div></div>
+    <div class="adstat"><div class="adslbl">오늘 완료</div><div class="adsval" style="color:var(--green);text-shadow:0 0 8px rgba(0,230,118,0.4)">1,261명</div><div style="font-size:11px;color:var(--text3);margin-top:3px">분배 완료</div></div>
+  </div>
+  <div class="adbtns">
+    <button class="adbtn p" onclick="batchDist()">전체 일괄 분배</button>
+    <button class="adbtn s" onclick="showToast('리포트 내보냄')">리포트 내보내기</button>
+  </div>
+  <div class="sec-title">투자자 목록</div>
+  <div id="invlist"></div>
+</div>
+
+</div><!-- /app-wrap -->
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <div class="ni" id="ni-ico" onclick="goPage('ico',this)">
+    <div class="ni-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+    <div class="ni-lbl">ICO</div>
+  </div>
+  <div class="ni" id="ni-ref" onclick="goPage('ref',this)">
+    <div class="ni-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+    <div class="ni-lbl">레퍼럴</div>
+  </div>
+  <div class="ni-c on" id="ni-c" onclick="goPage('home',document.getElementById('ni-home'))">
+    <div class="ni-cb"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    <div class="ni-lbl" style="color:var(--text2)">홈</div>
+  </div>
+  <div class="ni" id="ni-calc" onclick="goPage('calc',this)">
+    <div class="ni-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="11" y2="18"/></svg></div>
+    <div class="ni-lbl">계산기</div>
+  </div>
+  <div class="ni" id="ni-profile" onclick="goPage('profile',this);loadProfile()">
+    <div class="ni-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+    <div class="ni-lbl">프로필</div>
+  </div>
+</nav>
+<!-- hidden home nav ref -->
+<div id="ni-home" style="display:none"></div>
+
+<div class="modal-wrap" id="modal"><div class="modal-box"><div style="font-size:13px;font-weight:700;color:var(--purple-light);text-shadow:0 0 10px rgba(192,132,252,0.5);letter-spacing:.5px;margin-bottom:12px" id="mtit">완료</div><div class="modal-sub" id="msub"></div><button class="modal-close" onclick="closeModal()">확인</button></div></div>
+<div class="toast" id="toast"></div>
+
 <script>
-function goTab(tabId) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
-  document.querySelectorAll('.ni').forEach(n => n.classList.remove('on'));
-  
-  const targetPage = document.getElementById('p-' + tabId);
-  if(targetPage) targetPage.classList.add('on');
-  
-  // 현재 누른 내비 아이템에 활성화 클래스 부여
-  const idx = ['ico', 'referral', 'home', 'calc', 'profile'].indexOf(tabId);
-  document.querySelectorAll('.ni')[idx].classList.add('on');
+// ═══════════════════
+// SPIDER WEB
+// ═══════════════════
+(function(){
+  const canvas = document.getElementById('web-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, cx, cy;
+
+  function resize(){
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    cx = W * 0.75; cy = H * 0.28;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function drawWeb(){
+    ctx.clearRect(0,0,W,H);
+    const rings = 9, spokes = 12;
+    const maxR = Math.max(W,H) * 0.72;
+
+    // Radial spokes
+    for(let i=0;i<spokes;i++){
+      const angle = (i/spokes)*Math.PI*2 - Math.PI/2;
+      const x = cx + Math.cos(angle)*maxR;
+      const y = cy + Math.sin(angle)*maxR;
+      const grad = ctx.createLinearGradient(cx,cy,x,y);
+      grad.addColorStop(0,'rgba(168,85,247,0.35)');
+      grad.addColorStop(0.4,'rgba(139,92,246,0.18)');
+      grad.addColorStop(1,'rgba(124,58,237,0.0)');
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.lineTo(x,y);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+
+    // Concentric rings
+    for(let r=1;r<=rings;r++){
+      const radius = (r/rings)*maxR;
+      ctx.beginPath();
+      for(let i=0;i<spokes;i++){
+        const angle = (i/spokes)*Math.PI*2 - Math.PI/2;
+        const x = cx + Math.cos(angle)*radius;
+        const y = cy + Math.sin(angle)*radius;
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.closePath();
+      const alpha = 0.28 - (r/rings)*0.22;
+      ctx.strokeStyle = `rgba(168,85,247,${alpha})`;
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+    }
+
+    // Center glow
+    const glow = ctx.createRadialGradient(cx,cy,0,cx,cy,80);
+    glow.addColorStop(0,'rgba(168,85,247,0.25)');
+    glow.addColorStop(1,'rgba(168,85,247,0)');
+    ctx.beginPath();
+    ctx.arc(cx,cy,80,0,Math.PI*2);
+    ctx.fillStyle = glow;
+    ctx.fill();
+  }
+
+  drawWeb();
+
+  // Subtle pulse animation
+  let t=0;
+  function animate(){
+    t += 0.008;
+    canvas.style.opacity = 0.45 + Math.sin(t)*0.08;
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+
+// ═══════════════════
+// AUTH
+// ═══════════════════
+let token = localStorage.getItem('sb_token'), me = null;
+
+window.addEventListener('DOMContentLoaded', () => {
+  const p = new URLSearchParams(location.search);
+  if(p.get('verified')==='true'){
+    const u=p.get('u')||'';
+    if(u) document.getElementById('vsub').textContent=u+'님, 로그인하여 SpiderBOT을 이용하세요';
+    document.getElementById('vbanner').style.display='block';
+    atab('login'); history.replaceState({},'','/');
+  }
+  if(p.get('error')){
+    const m={expired:'인증 링크가 만료되었습니다.',invalid:'유효하지 않은 링크.',server:'서버 오류.'};
+    showErr(m[p.get('error')]||'오류가 발생했습니다'); history.replaceState({},'','/');
+  }
+  if(token) autoLogin();
+});
+
+async function autoLogin(){
+  try{
+    const r=await fetch('/api/me',{headers:{Authorization:'Bearer '+token}});
+    if(!r.ok) throw new Error();
+    loginOK(await r.json());
+  }catch{ localStorage.removeItem('sb_token'); token=null; }
 }
 
-// 실시간 로그인 유저 프로필 데이터 매핑 파이프라인
-async function loadUserProfile() {
-  const token = localStorage.getItem('token');
-  if(!token) return;
-  try {
-    const res = await fetch('/api/user', { headers: { 'Authorization': `Bearer ${token}` } });
-    if(res.ok) {
-      const data = await res.json();
-      document.getElementById('prof-id-num').textContent = data.user_id_num;
-      document.getElementById('prof-username').textContent = data.username;
-      document.getElementById('prof-email').textContent = data.email;
-      document.getElementById('prof-date').textContent = new Date(data.created_at).toLocaleDateString();
-      document.getElementById('prof-plan').textContent = data.plan.toUpperCase();
-      document.getElementById('prof-profit').textContent = '$' + Number(data.total_profit).toLocaleString();
-      document.getElementById('t-user').textContent = data.username.toUpperCase();
-    }
-  } catch(e) { console.error("프로필 로드 에러", e); }
+function loginOK(u){
+  me=u;
+  document.getElementById('auth-wrap').classList.add('hidden');
+  document.getElementById('t-user').textContent=u.username;
+  document.getElementById('t-user').style.display='inline';
+  document.getElementById('logout-btn').style.display='inline';
+  document.getElementById('cur-plan').textContent=u.plan&&u.plan!=='none'?u.plan:'플랜 없음';
 }
-window.addEventListener('DOMContentLoaded', loadUserProfile);
+
+function doLogout(){
+  localStorage.removeItem('sb_token'); token=null; me=null;
+  document.getElementById('auth-wrap').classList.remove('hidden');
+  document.getElementById('t-user').style.display='none';
+  document.getElementById('logout-btn').style.display='none';
+  atab('login'); showToast('로그아웃 되었습니다');
+}
+
+function atab(t){
+  clrMsg();
+  ['fl','freg','frs'].forEach(x=>document.getElementById(x).style.display='none');
+  document.getElementById('tl').classList.toggle('on',t==='login');
+  document.getElementById('tr').classList.toggle('on',t==='reg');
+  document.getElementById('rslink').style.display=t==='resend'?'none':'block';
+  if(t==='login') document.getElementById('fl').style.display='block';
+  else if(t==='reg') document.getElementById('freg').style.display='block';
+  else document.getElementById('frs').style.display='block';
+}
+
+function clrMsg(){document.getElementById('aerr').classList.remove('show');document.getElementById('aok').classList.remove('show')}
+function showErr(m){const e=document.getElementById('aerr');e.textContent=m;e.classList.add('show');document.getElementById('aok').classList.remove('show')}
+function showOK(m){const e=document.getElementById('aok');e.textContent=m;e.classList.add('show');document.getElementById('aerr').classList.remove('show')}
+function tp(id,btn){const el=document.getElementById(id);el.type=el.type==='password'?'text':'password';btn.textContent=el.type==='password'?'보기':'숨기기'}
+
+function cr(){
+  const pw=document.getElementById('rp').value,u=document.getElementById('ru').value;
+  const s=(id,ok)=>{const e=document.getElementById(id);e.className='rule '+(ok?'ok':'no')};
+  s('r1',pw.length>=8);s('r2',/[!@#$%^&*()\-_=+\[\]{};':",.<>/?\\|]/.test(pw));
+  s('r3',u.length>=3&&u.length<=20);s('r4',/^[a-zA-Z0-9_]*$/.test(u)&&u.length>0);
+}
+
+async function doReg(){
+  clrMsg();
+  const u=document.getElementById('ru').value.trim(),e=document.getElementById('re').value.trim(),p=document.getElementById('rp').value;
+  const btn=document.getElementById('rbtn');
+  if(!u||!e||!p) return showErr('모든 항목을 입력해주세요');
+  btn.disabled=true;btn.textContent='처리 중...';
+  try{
+    const r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,email:e,password:p})});
+    const d=await r.json();
+    if(!r.ok) return showErr(d.error);
+    showOK(d.message);
+    document.getElementById('ru').value='';document.getElementById('re').value='';document.getElementById('rp').value='';cr();
+  }catch{showErr('네트워크 오류가 발생했습니다')}
+  finally{btn.disabled=false;btn.textContent='회원가입 & 인증 메일 발송'}
+}
+
+async function doLogin(){
+  clrMsg();
+  const u=document.getElementById('lu').value.trim(),p=document.getElementById('lp').value;
+  const btn=document.getElementById('lbtn');
+  if(!u||!p) return showErr('아이디와 비밀번호를 입력해주세요');
+  btn.disabled=true;btn.textContent='로그인 중...';
+  try{
+    const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const d=await r.json();
+    if(!r.ok) return showErr(d.error);
+    localStorage.setItem('sb_token',d.token);token=d.token;
+    loginOK(d.user);showToast('환영합니다, '+d.user.username+'님');
+  }catch{showErr('네트워크 오류가 발생했습니다')}
+  finally{btn.disabled=false;btn.textContent='로그인'}
+}
+
+async function doResend(){
+  clrMsg();
+  const e=document.getElementById('rse').value.trim(),btn=document.getElementById('rsbtn');
+  if(!e) return showErr('이메일을 입력해주세요');
+  btn.disabled=true;btn.textContent='발송 중...';
+  try{
+    const r=await fetch('/api/resend-verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e})});
+    const d=await r.json();
+    if(!r.ok) return showErr(d.error);
+    showOK(d.message);
+  }catch{showErr('네트워크 오류가 발생했습니다')}
+  finally{btn.disabled=false;btn.textContent='인증 메일 재발송'}
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter'||document.getElementById('auth-wrap').classList.contains('hidden')) return;
+  if(document.getElementById('freg').style.display!=='none') doReg();
+  else if(document.getElementById('frs').style.display!=='none') doResend();
+  else doLogin();
+});
+
+// ═══════════════════
+// APP
+// ═══════════════════
+let botOn=true,crate=4;
+
+const invs=[
+  {n:'김민준',id:'SB-1042',plan:'Silver',inv:500000,rate:4,days:178,st:'대기'},
+  {n:'이서연',id:'SB-0873',plan:'Gold',inv:1000000,rate:6,days:92,st:'대기'},
+  {n:'박도현',id:'SB-1157',plan:'Starter',inv:50000,rate:2,days:45,st:'완료'},
+  {n:'최지아',id:'SB-0423',plan:'Diamond',inv:10000000,rate:9.5,days:203,st:'대기'},
+  {n:'정유진',id:'SB-1289',plan:'Silver',inv:800000,rate:4,days:67,st:'완료'},
+];
+const wdh=[
+  {t:'수익 출금',d:'2025.07.10',a:150000,s:'done'},{t:'수익 출금',d:'2025.07.05',a:350000,s:'done'},
+  {t:'수익 출금',d:'2025.06.28',a:200000,s:'done'},{t:'수익 출금',d:'2025.06.20',a:192500,s:'wait'},
+];
+
+function goPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ni,.ni-c').forEach(n=>n.classList.remove('on'));
+  document.getElementById('page-'+id).classList.add('on');
+  if(el) el.classList.add('on');
+  const nc=document.getElementById('ni-c');
+  if(id==='home') nc.classList.add('on'); else nc.classList.remove('on');
+  window.scrollTo(0,0);
+}
+
+function loadProfile(){
+  if(!me) return;
+  const planNames={none:'플랜 없음',starter:'Starter',bronze:'Bronze',silver:'Silver',gold:'Gold',platinum:'Platinum',diamond:'Diamond',royal:'Royal',imperial:'Imperial',dynasty:'Dynasty',legacy:'Legacy'};
+  document.getElementById('pf-avatar').textContent = me.username ? me.username[0].toUpperCase() : '?';
+  document.getElementById('pf-username').textContent = me.username || '-';
+  document.getElementById('pf-plan').textContent = planNames[me.plan] || '플랜 없음';
+  document.getElementById('pf-id').textContent = me.username || '-';
+  document.getElementById('pf-email').textContent = me.email || '-';
+  document.getElementById('pf-uid').textContent = me.user_id || '-';
+  document.getElementById('pf-profit').textContent = krw(me.total_profit || 0);
+  document.getElementById('pf-balance').textContent = krw(me.balance || 0);
+  const d = me.created_at ? new Date(me.created_at) : null;
+  document.getElementById('pf-date').textContent = d ? `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}` : '-';
+
+  // 거래내역 (현재 더미 데이터 — 추후 실제 연동)
+  const txs = [
+    {type:'입금',coin:'USDT (TRC20)',amount:'+500,000원',date:'2025.01.15',hash:'TRx...a4f2'},
+    {type:'출금',coin:'USDT (TRC20)',amount:'-150,000원',date:'2025.07.10',hash:'TRx...9c3e'},
+    {type:'출금',coin:'USDT (TRC20)',amount:'-350,000원',date:'2025.07.05',hash:'TRx...2b8d'},
+  ];
+  const txEl = document.getElementById('pf-txlist');
+  if(!txs.length){
+    txEl.innerHTML = '<div style="text-align:center;padding:24px;font-size:13px;color:var(--text3)">거래 내역이 없습니다</div>';
+    return;
+  }
+  txEl.innerHTML = txs.map(tx=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:${tx.type==='입금'?'rgba(0,230,118,0.12)':'rgba(168,85,247,0.12)'};color:${tx.type==='입금'?'var(--green)':'var(--purple-light)'}">${tx.type}</span>
+          <span style="font-size:12px;color:var(--text2)">${tx.coin}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3)">${tx.date} · ${tx.hash}</div>
+      </div>
+      <div style="font-family:'Inter',sans-serif;font-size:15px;font-weight:700;color:${tx.type==='입금'?'var(--green)':'var(--purple-light)'}">
+        ${tx.amount}
+      </div>
+    </div>`).join('');
+}
+
+function krw(n){return Math.round(n).toLocaleString('ko-KR')+'원'}
+function sr(el,r){crate=r;document.querySelectorAll('.rb').forEach(b=>b.classList.remove('on'));el.classList.add('on');calc()}
+function calc(){
+  const a=parseFloat(document.getElementById('camt').value)||0,d=parseInt(document.getElementById('cdays').value)||30,day=a*crate/100;
+  document.getElementById('rday').textContent=krw(day);
+  document.getElementById('rwk').textContent=krw(day*7);
+  document.getElementById('rmo').textContent=krw(day*30);
+  document.getElementById('rtot').textContent=krw(day*d);
+  document.getElementById('rfin').textContent=krw(a+day*d);
+  document.getElementById('rpct').textContent=(crate*d).toFixed(1)+'%';
+}
+calc();
+
+function toggleBot(){
+  botOn=!botOn;
+  const el=document.getElementById('bottxt'),p=el.parentElement;
+  if(botOn){el.textContent='봇 활성 — 실시간 운용 중';p.classList.add('on');showToast('봇 활성화됨')}
+  else{el.textContent='봇 비활성 — 운용 중단됨';p.classList.remove('on');showToast('봇 비활성화됨')}
+}
+
+function sact(m){
+  document.getElementById('bdep').className='act-btn '+(m==='dep'?'on':'off');
+  document.getElementById('bwd').className='act-btn '+(m==='wd'?'on':'off');
+  showToast(m==='dep'?'입금 모드':'출금 모드');
+}
+
+function selPlan(n,r,mn,mx){showModal(n+' 플랜 신청 접수',n+' 플랜 (일 '+r+')\n'+mn+' ~ '+mx+'\n\n신청이 접수되었습니다.\n담당자가 확인 후 연락드립니다.')}
+
+document.getElementById('trades').innerHTML=
+  [{pair:'BTC/USDT',type:'매수',profit:'+23,400원',time:'09:42'},{pair:'ETH/USDT',type:'매도',profit:'+18,200원',time:'09:15'},{pair:'SOL/USDT',type:'매수',profit:'+11,800원',time:'08:53'},{pair:'BTC/USDT',type:'매도',profit:'+21,600원',time:'08:21'}]
+  .map(t=>`<div class="hi"><div><div style="font-size:14px;font-weight:500">${t.pair} <span style="font-size:11px;padding:2px 7px;border-radius:6px;background:${t.type==='매수'?'rgba(0,230,118,0.1)':'rgba(255,59,92,0.1)'};color:${t.type==='매수'?'var(--green)':'var(--red)'}">${t.type}</span></div><div style="font-size:11px;color:var(--text3);margin-top:3px">${t.time}</div></div><div class="ha done">${t.profit}</div></div>`).join('');
+
+document.getElementById('wdhist').innerHTML=wdh.map(h=>`<div class="hi"><div><div style="font-size:14px;font-weight:500">${h.t}</div><div style="font-size:11px;color:var(--text3);margin-top:3px">${h.d}</div></div><div class="ha ${h.s}">-${krw(h.a)}</div></div>`).join('');
+
+function renderInv(){
+  document.getElementById('invlist').innerHTML=invs.map((v,i)=>{
+    const d=Math.round(v.inv*v.rate/100);
+    return `<div class="icard"><div class="itop"><div class="iinfo"><div class="iav">${v.n[0]}</div><div><div style="font-size:14px;font-weight:700">${v.n}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${v.id}</div></div></div><div style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:18px;background:rgba(168,85,247,.1);color:var(--purple-light);border:1px solid rgba(168,85,247,.25)">${v.plan}</div></div><div class="imetrics"><div class="imet"><div class="iml">원금</div><div class="imv" style="color:var(--text2);font-size:11px">${krw(v.inv)}</div></div><div class="imet"><div class="iml">일 수익</div><div class="imv" style="color:var(--green)">${krw(d)}</div></div><div class="imet"><div class="iml">상태</div><div class="imv" style="color:${v.st==='완료'?'var(--green)':'var(--purple-light)'}">${v.st}</div></div></div><button class="distbtn" onclick="dist(${i})" ${v.st==='완료'?'disabled':''}>${v.st==='완료'?'분배 완료':'수익 분배 +'+krw(d)}</button></div>`;
+  }).join('');
+}
+renderInv();
+
+function dist(i){invs[i].st='완료';renderInv();showModal('분배 완료',invs[i].n+'님께\n'+krw(Math.round(invs[i].inv*invs[i].rate/100))+' 분배 완료')}
+function batchDist(){invs.forEach(v=>v.st='완료');renderInv();showModal('일괄 분배 완료','오늘 전체 수익금\n분배가 완료되었습니다.')}
+
+function showModal(title,sub){
+  document.getElementById('mtit').textContent=title;
+  document.getElementById('msub').textContent=sub;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+
+let tt;
+function showToast(m){
+  const t=document.getElementById('toast');t.textContent=m;clearTimeout(tt);
+  t.classList.remove('show');setTimeout(()=>t.classList.add('show'),10);
+  tt=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+setTimeout(()=>{document.getElementById('progf').style.width='25%'},500);
 </script>
 </body>
 </html>
