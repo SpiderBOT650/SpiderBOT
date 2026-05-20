@@ -1,11 +1,8 @@
 {
   "name": "spiderbot",
   "version": "1.0.0",
-  "description": "SpiderBOT AI Trading Platform",
-  "main": "api/index.js",
   "scripts": {
-    "start": "node api/index.js",
-    "dev": "node api/index.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
