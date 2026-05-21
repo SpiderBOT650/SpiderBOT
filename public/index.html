@@ -733,9 +733,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
     <!-- 직접 입력 -->
     <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(139,92,246,0.25);border-radius:14px;padding:4px 6px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
-      <input id="c-amt-input" type="number" inputmode="numeric" min="0"
+      <input id="c-amt-input" type="number" inputmode="numeric" min="0" max="1000000000000000"
         placeholder="직접 입력 (원)"
         oninput="onAmtInput(this.value)"
+        onkeydown="return blockOverMax(event, this, 1000000000000000)"
         style="flex:1;background:none;border:none;outline:none;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--text);padding:10px 12px;min-width:0">
       <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--text3);padding-right:6px">원</span>
       <button onclick="resetAmt()" style="background:rgba(255,255,255,0.06);border:none;border-radius:9px;color:var(--text3);font-size:12px;padding:8px 12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;flex-shrink:0;white-space:nowrap">초기화</button>
@@ -763,6 +764,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <input id="c-days-input" type="number" inputmode="numeric" min="1" max="3650"
         placeholder="직접 입력"
         oninput="onDaysInput(this.value)"
+        onkeydown="return blockOverMax(event, this, 3650)"
         style="flex:1;background:none;border:none;outline:none;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--text);padding:10px 12px;min-width:0">
       <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--text3);padding-right:12px">일</span>
     </div>
@@ -1342,6 +1344,18 @@ const PLANS=[
 const MAX_AMT = 1000000000000000; // 1000조
 const MAX_DAYS = 3650;
 
+// 최대값 초과 입력 차단
+function blockOverMax(e, input, max){
+  const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab','Enter'];
+  if(allowed.includes(e.key)) return true;
+  const cur = input.value + (e.key.match(/[0-9]/) ? e.key : '');
+  if(parseInt(cur) > max){
+    showToast('최대 '+max.toLocaleString('ko-KR')+' 이상 입력할 수 없습니다');
+    return false;
+  }
+  return true;
+}
+
 function findPlan(amt){
   if(amt<=0) return null;
   for(let i=0;i<PLANS.length;i++){
@@ -1363,7 +1377,14 @@ function resetAmt(){
 }
 
 function onAmtInput(val){
-  calcAmt = Math.min(Math.max(0, parseInt(val)||0), MAX_AMT);
+  const n = parseInt(val)||0;
+  if(n > MAX_AMT){
+    document.getElementById('c-amt-input').value = MAX_AMT;
+    calcAmt = MAX_AMT;
+    showToast('최대 입력 금액은 1,000조원입니다');
+  } else {
+    calcAmt = Math.max(0, n);
+  }
   updateCalc();
 }
 
