@@ -513,6 +513,47 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
 .div{height:1px;background:linear-gradient(to right,transparent,rgba(168,85,247,0.2),transparent);margin:20px 0}
 .psub{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.8}
+.qadd-btn{
+  flex:1;padding:10px 4px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(139,92,246,0.2);
+  border-radius:10px;
+  color:var(--text2);font-size:12px;font-weight:700;
+  font-family:'Noto Sans KR',sans-serif;cursor:pointer;
+  transition:all .2s;white-space:nowrap;
+}
+.qadd-btn:active{background:rgba(168,85,247,0.2);color:var(--purple-light);box-shadow:0 0 8px rgba(168,85,247,0.2)}
+.period-btn{
+  flex:1;padding:12px 4px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(139,92,246,0.15);
+  border-radius:11px;
+  color:var(--text3);font-size:13px;font-weight:700;
+  font-family:'Noto Sans KR',sans-serif;cursor:pointer;
+  transition:all .2s;
+}
+.period-btn.on{
+  background:rgba(0,230,118,0.1);
+  border-color:rgba(0,230,118,0.35);
+  color:var(--green);
+  box-shadow:0 0 10px rgba(0,230,118,0.15);
+}
+.plan-rate-btn{
+  flex:1;min-width:54px;padding:9px 3px;text-align:center;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:10px;font-size:11px;font-weight:700;
+  color:var(--text3);cursor:pointer;transition:all .2s;
+  font-family:'Noto Sans KR',sans-serif;line-height:1.6;
+}
+.plan-rate-btn span{font-size:9px;font-weight:400;color:var(--text3)}
+.plan-rate-btn.on{
+  background:rgba(168,85,247,0.15);
+  border-color:rgba(168,85,247,0.45);
+  color:var(--purple-light);
+  box-shadow:0 0 8px rgba(168,85,247,0.2);
+}
+.plan-rate-btn.on span{color:var(--purple-light)}
 .row-kv{display:flex;justify-content:space-between;margin-bottom:7px}
 .kv-k{font-size:12px;color:var(--text3)}
 .kv-v{font-size:12px;font-weight:500;color:var(--text)}
@@ -680,36 +721,116 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
 <!-- CALCULATOR -->
 <div class="page" id="page-calc">
-  <p class="psub">투자 금액과 기간을 입력하면 보장 수익을 실시간으로 계산합니다.</p>
-  <div class="cc">
-    <div class="cl">투자 금액 (원)</div>
-    <input class="ci" type="number" id="camt" value="500000" oninput="calc()" inputmode="numeric">
-    <div class="cl">일 수익률 선택</div>
-    <div class="rsel">
-      <div class="rb" onclick="sr(this,2)">2%<br><span style="font-size:9px;color:var(--text3)">Starter</span></div>
-      <div class="rb" onclick="sr(this,2.5)">2.5%<br><span style="font-size:9px;color:var(--text3)">Bronze</span></div>
-      <div class="rb on" onclick="sr(this,4)">4%<br><span style="font-size:9px">Silver</span></div>
-      <div class="rb" onclick="sr(this,6)">6%<br><span style="font-size:9px;color:var(--text3)">Gold</span></div>
-      <div class="rb" onclick="sr(this,8)">8%<br><span style="font-size:9px;color:var(--text3)">Plat</span></div>
-      <div class="rb" onclick="sr(this,9.5)">9.5%<br><span style="font-size:9px;color:var(--text3)">Dia</span></div>
-      <div class="rb" onclick="sr(this,11)">11%<br><span style="font-size:9px;color:var(--text3)">Royal</span></div>
-      <div class="rb" onclick="sr(this,12.5)">12.5%<br><span style="font-size:9px;color:var(--text3)">Imp</span></div>
-      <div class="rb" onclick="sr(this,14)">14%<br><span style="font-size:9px;color:var(--text3)">Dyn</span></div>
-      <div class="rb" onclick="sr(this,15)">15%<br><span style="font-size:9px;color:var(--text3)">Leg</span></div>
+
+  <!-- Title -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;text-shadow:0 0 10px rgba(168,85,247,0.3)">수익 계산기</div>
+    <div class="ic">i</div>
+  </div>
+
+  <!-- 투자 금액 -->
+  <div style="margin-bottom:20px">
+    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">투자 금액</div>
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(139,92,246,0.25);border-radius:14px;padding:4px 6px;margin-bottom:10px;display:flex;align-items:center">
+      <input id="c-amt-disp" type="text" readonly
+        style="flex:1;background:none;border:none;outline:none;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--text);padding:10px 12px;cursor:default"
+        placeholder="0 원" value="">
+      <button onclick="resetAmt()" style="background:rgba(255,255,255,0.06);border:none;border-radius:9px;color:var(--text3);font-size:12px;padding:7px 12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-right:4px">초기화</button>
     </div>
-    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.5px"><span>운용 기간</span><span id="dlbl" style="color:var(--green);font-weight:700;text-shadow:0 0 6px rgba(0,230,118,0.4)">30일</span></div>
-    <input class="csl" type="range" min="1" max="365" value="30" step="1" id="cdays" oninput="document.getElementById('dlbl').textContent=this.value+'일';calc()">
-    <div class="cres">
-      <div class="crow"><span class="ck">일 수익금</span><span class="cv g" id="rday">—</span></div>
-      <div class="crow"><span class="ck">주간 수익금</span><span class="cv g" id="rwk">—</span></div>
-      <div class="crow"><span class="ck">월간 수익금</span><span class="cv g" id="rmo">—</span></div>
-      <div class="crow"><span class="ck">기간 총 수익</span><span class="cv p" id="rtot">—</span></div>
-      <div class="crow"><span class="ck">원금 + 수익</span><span class="cv p" id="rfin">—</span></div>
-      <div class="crow"><span class="ck">총 수익률</span><span class="cv g" id="rpct">—</span></div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;padding:0 2px">범위: 10,000원 ~ 150,000,000원+</div>
+    <!-- Quick add buttons -->
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <button class="qadd-btn" onclick="addAmt(10000)">+1만</button>
+      <button class="qadd-btn" onclick="addAmt(50000)">+5만</button>
+      <button class="qadd-btn" onclick="addAmt(100000)">+10만</button>
+      <button class="qadd-btn" onclick="addAmt(500000)">+50만</button>
+      <button class="qadd-btn" onclick="addAmt(1000000)">+100만</button>
     </div>
   </div>
-  <div class="notice">보장 수익률 기준으로 산출됩니다.<br>수익금은 매일 오전 10시 수동 분배됩니다.<br>실제 수익은 플랜 약정에 따라 지급됩니다.</div>
+
+  <!-- 기간 -->
+  <div style="margin-bottom:20px">
+    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">기간</div>
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(139,92,246,0.25);border-radius:14px;padding:14px 18px;margin-bottom:10px">
+      <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--text)" id="c-days-disp">7 일</span>
+    </div>
+    <!-- Period buttons -->
+    <div style="display:flex;gap:8px">
+      <button class="period-btn" onclick="setPeriod(this,1)">1 일</button>
+      <button class="period-btn on" onclick="setPeriod(this,7)">7 일</button>
+      <button class="period-btn" onclick="setPeriod(this,30)">30 일</button>
+      <button class="period-btn" onclick="setPeriod(this,90)">90 일</button>
+    </div>
+  </div>
+
+  <!-- 플랜 선택 -->
+  <div style="margin-bottom:20px">
+    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">플랜 선택 (일 ROI)</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="plan-rate-btn" onclick="setCalcRate(this,2,'Starter')">2%<br><span>Starter</span></button>
+      <button class="plan-rate-btn" onclick="setCalcRate(this,2.5,'Bronze')">2.5%<br><span>Bronze</span></button>
+      <button class="plan-rate-btn on" onclick="setCalcRate(this,4,'Silver')">4%<br><span>Silver</span></button>
+      <button class="plan-rate-btn" onclick="setCalcRate(this,6,'Gold')">6%<br><span>Gold</span></button>
+      <button class="plan-rate-btn" onclick="setCalcRate(this,8,'Plat')">8%<br><span>Plat</span></button>
+      <button class="plan-rate-btn" onclick="setCalcRate(this,9.5,'Dia')">9.5%<br><span>Dia</span></button>
+      <button class="plan-rate-btn" onclick="setCalcRate(this,11,'Royal')">11%<br><span>Royal</span></button>
+      <button class="plan-rate-btn" onclick="setCalcRate(this,12.5,'Imp')">12.5%<br><span>Imp</span></button>
+      <button class="plan-rate-btn" onclick="setCalcRate(this,14,'Dyn')">14%<br><span>Dyn</span></button>
+      <button class="plan-rate-btn" onclick="setCalcRate(this,15,'Legacy')">15%<br><span>Legacy</span></button>
+    </div>
+  </div>
+
+  <!-- 결과 카드 -->
+  <div style="background:linear-gradient(135deg,rgba(5,30,18,0.95),rgba(8,40,22,0.95));border:1px solid rgba(0,230,118,0.25);border-radius:20px;padding:22px;margin-bottom:16px;box-shadow:0 0 30px rgba(0,230,118,0.06)">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <div style="width:42px;height:42px;border-radius:12px;background:rgba(0,230,118,0.15);border:1px solid rgba(0,230,118,0.3);display:flex;align-items:center;justify-content:center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">예상 결과</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--text)">수익 계산</div>
+      </div>
+    </div>
+
+    <!-- 총 순이익 -->
+    <div style="background:rgba(0,0,0,0.25);border-radius:14px;padding:18px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">총 순이익</span>
+        <span id="c-pct" style="font-size:12px;font-weight:700;color:var(--green);text-shadow:0 0 8px rgba(0,230,118,0.4)">+0.0%</span>
+      </div>
+      <div id="c-total" style="font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:1px;color:var(--green);text-shadow:0 0 20px rgba(0,230,118,0.4),0 0 40px rgba(0,230,118,0.2);line-height:1">₩0</div>
+    </div>
+
+    <!-- 일일 수익 / 일일 ROI -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div style="background:rgba(0,0,0,0.2);border-radius:12px;padding:14px">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">일일 수익</div>
+        <div id="c-daily" style="font-family:'Inter',sans-serif;font-size:18px;font-weight:800;color:var(--green);text-shadow:0 0 10px rgba(0,230,118,0.3)">₩0</div>
+      </div>
+      <div style="background:rgba(0,0,0,0.2);border-radius:12px;padding:14px">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">일일 ROI</div>
+        <div id="c-roi" style="font-family:'Inter',sans-serif;font-size:18px;font-weight:800;color:var(--green);text-shadow:0 0 10px rgba(0,230,118,0.3)">4%</div>
+      </div>
+    </div>
+
+    <!-- 최종 금액 -->
+    <div style="background:rgba(0,0,0,0.2);border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;color:var(--text2)">최종 금액 (원금 + 수익)</span>
+      <span id="c-final" style="font-family:'Inter',sans-serif;font-size:16px;font-weight:800;color:var(--text)">₩0</span>
+    </div>
+  </div>
+
+  <!-- CTA 버튼 -->
+  <button id="calc-cta" onclick="goPage('plans',document.getElementById('ni-plans'))"
+    style="width:100%;padding:17px;background:linear-gradient(135deg,#00B85C,#00E676);border:none;border-radius:14px;color:#001A0D;font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;box-shadow:0 0 20px rgba(0,230,118,0.35),0 0 40px rgba(0,230,118,0.15);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.3px;margin-bottom:12px">
+    <span id="cta-txt">계속하려면 금액을 입력하세요</span>
+    <span style="font-size:18px">→</span>
+  </button>
+
+  <div style="text-align:center;font-size:11px;color:var(--text3);letter-spacing:.3px">현재 선택한 플랜 요율 기반 예상 결과</div>
 </div>
+
 
 <!-- PORTFOLIO -->
 <!-- ICO (준비 중) -->
@@ -1197,6 +1318,63 @@ document.addEventListener('keydown',e=>{
 // APP
 // ═══════════════════
 let botOn=true,crate=4;
+let calcAmt=0, calcDays=7;
+
+function krw(n){return Math.round(n).toLocaleString('ko-KR')+'원'}
+function krwShort(n){
+  n=Math.round(n);
+  if(n>=100000000) return (n/100000000).toFixed(1)+'억원';
+  if(n>=10000) return (n/10000).toFixed(n%10000===0?0:1)+'만원';
+  return n.toLocaleString('ko-KR')+'원';
+}
+
+function addAmt(v){
+  calcAmt += v;
+  updateCalcDisplay();
+}
+function resetAmt(){
+  calcAmt = 0;
+  updateCalcDisplay();
+}
+function setPeriod(el, days){
+  calcDays = days;
+  document.getElementById('c-days-disp').textContent = days+' 일';
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  updateCalcDisplay();
+}
+function setCalcRate(el, rate, name){
+  crate = rate;
+  document.querySelectorAll('.plan-rate-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('c-roi').textContent = rate+'%';
+  updateCalcDisplay();
+}
+function updateCalcDisplay(){
+  const amtEl = document.getElementById('c-amt-disp');
+  amtEl.value = calcAmt>0 ? calcAmt.toLocaleString('ko-KR')+'원' : '';
+  amtEl.placeholder = calcAmt>0 ? '' : '금액을 선택하세요';
+
+  const daily = calcAmt * crate / 100;
+  const total = daily * calcDays;
+  const final = calcAmt + total;
+  const pct   = calcAmt > 0 ? (total/calcAmt*100).toFixed(1) : '0.0';
+
+  document.getElementById('c-daily').textContent = '₩'+Math.round(daily).toLocaleString('ko-KR');
+  document.getElementById('c-total').textContent = '₩'+Math.round(total).toLocaleString('ko-KR');
+  document.getElementById('c-final').textContent = '₩'+Math.round(final).toLocaleString('ko-KR');
+  document.getElementById('c-pct').textContent   = '+'+pct+'%';
+  document.getElementById('c-roi').textContent   = crate+'%';
+
+  const ctaTxt = document.getElementById('cta-txt');
+  if(calcAmt > 0){
+    ctaTxt.textContent = calcDays+'일 후 ₩'+Math.round(total).toLocaleString('ko-KR')+' 수익 예상';
+  } else {
+    ctaTxt.textContent = '계속하려면 금액을 입력하세요';
+  }
+}
+// init
+updateCalcDisplay();
 
 const invs=[
   {n:'김민준',id:'SB-1042',plan:'Silver',inv:500000,rate:4,days:178,st:'대기'},
@@ -1261,18 +1439,6 @@ function loadProfile(){
 }
 
 function krw(n){return Math.round(n).toLocaleString('ko-KR')+'원'}
-function sr(el,r){crate=r;document.querySelectorAll('.rb').forEach(b=>b.classList.remove('on'));el.classList.add('on');calc()}
-function calc(){
-  const a=parseFloat(document.getElementById('camt').value)||0,d=parseInt(document.getElementById('cdays').value)||30,day=a*crate/100;
-  document.getElementById('rday').textContent=krw(day);
-  document.getElementById('rwk').textContent=krw(day*7);
-  document.getElementById('rmo').textContent=krw(day*30);
-  document.getElementById('rtot').textContent=krw(day*d);
-  document.getElementById('rfin').textContent=krw(a+day*d);
-  document.getElementById('rpct').textContent=(crate*d).toFixed(1)+'%';
-}
-calc();
-
 function toggleBot(){
   botOn=!botOn;
   const el=document.getElementById('bottxt'),p=el.parentElement;
