@@ -174,6 +174,10 @@ app.post('/api/resend-verify', async (req, res) => {
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 
+// 대시보드 앱
+app.get('/app', (_, res) => res.sendFile(path.join(__dirname, 'public', 'app.html')));
+app.get('/app/*', (_, res) => res.sendFile(path.join(__dirname, 'public', 'app.html')));
+
 // SPA fallback
 app.get('*', (_, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
