@@ -808,6 +808,87 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   <div id="invlist"></div>
 </div>
 
+
+<!-- ICO PAGE -->
+<div class="page" id="page-ico">
+  <div style="text-align:center;padding:60px 20px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;background:linear-gradient(135deg,var(--purple-light),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 15px rgba(168,85,247,0.4));margin-bottom:16px">ICO</div>
+    <div style="font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:32px">SpiderBOT ICO 페이지입니다.<br>준비 중입니다. 곧 공개됩니다.</div>
+    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:16px;padding:24px;max-width:360px;margin:0 auto">
+      <div style="font-size:12px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">오픈 예정</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:var(--purple-light);text-shadow:0 0 15px rgba(192,132,252,0.4)">Coming Soon</div>
+    </div>
+  </div>
+</div>
+
+<!-- REFERRAL PAGE -->
+<div class="page" id="page-ref">
+  <div class="sec-title">레퍼럴 시스템</div>
+  <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:16px;padding:20px;margin-bottom:16px;text-align:center">
+    <div style="font-size:12px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">준비 중</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--purple-light);text-shadow:0 0 15px rgba(192,132,252,0.4);margin-bottom:10px">Coming Soon</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.8">추천인 시스템이 곧 오픈됩니다.<br>친구를 초대하고 수익을 나눠가지세요.</div>
+  </div>
+  <div class="neon-card" style="padding:20px;margin-bottom:12px">
+    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">예정 혜택</div>
+    <div class="row-kv" style="margin-bottom:10px"><span class="kv-k">직접 추천 보상</span><span style="font-size:13px;font-weight:700;color:var(--green)">준비 중</span></div>
+    <div class="row-kv" style="margin-bottom:10px"><span class="kv-k">간접 추천 보상</span><span style="font-size:13px;font-weight:700;color:var(--green)">준비 중</span></div>
+    <div class="row-kv"><span class="kv-k">추천인 코드</span><span style="font-size:13px;font-weight:700;color:var(--purple-light)">오픈 예정</span></div>
+  </div>
+</div>
+
+<!-- PROFILE PAGE -->
+<div class="page" id="page-profile">
+  <div class="sec-title">내 프로필</div>
+
+  <!-- User Info Card -->
+  <div class="bal-card" style="margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+      <div id="prof-avatar" style="width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,var(--purple2),var(--purple));display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;color:#fff;flex-shrink:0;box-shadow:0 0 16px rgba(168,85,247,0.4)">?</div>
+      <div>
+        <div id="prof-username" style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;text-shadow:0 0 10px rgba(168,85,247,0.3)">-</div>
+        <div id="prof-plan" style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(168,85,247,0.12);color:var(--purple-light);border:1px solid rgba(168,85,247,0.25);display:inline-block;margin-top:4px">플랜 없음</div>
+      </div>
+    </div>
+    <div class="row-kv" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+      <span class="kv-k">사용자 ID</span>
+      <span id="prof-uid" style="font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:var(--purple-light);text-shadow:0 0 6px rgba(192,132,252,0.3);letter-spacing:1px">-</span>
+    </div>
+    <div class="row-kv" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+      <span class="kv-k">이메일</span>
+      <span id="prof-email" style="font-size:13px;font-weight:500;color:var(--text2)">-</span>
+    </div>
+    <div class="row-kv" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+      <span class="kv-k">가입일</span>
+      <span id="prof-date" style="font-size:13px;font-weight:500;color:var(--text2)">-</span>
+    </div>
+    <div class="row-kv" style="padding:10px 0">
+      <span class="kv-k">총 수익</span>
+      <span id="prof-profit" style="font-family:'Inter',sans-serif;font-size:14px;font-weight:700;color:var(--green);text-shadow:0 0 8px rgba(0,230,118,0.3)">0 원</span>
+    </div>
+  </div>
+
+  <!-- Crypto Transaction History -->
+  <div class="sec-title">암호화폐 거래 내역</div>
+  <div style="background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.15);border-radius:14px;padding:14px 16px;margin-bottom:14px">
+    <div style="font-size:12px;color:var(--text3);line-height:1.7">모든 입출금은 암호화폐(USDT, BTC, ETH)로만 처리됩니다.<br>거래 확인까지 네트워크에 따라 시간이 소요될 수 있습니다.</div>
+  </div>
+
+  <!-- Filter tabs -->
+  <div style="display:flex;gap:8px;margin-bottom:16px">
+    <button onclick="filterTx('all',this)" class="tx-filter on" style="flex:1;padding:9px;background:linear-gradient(135deg,var(--purple2),var(--purple));border:none;border-radius:10px;color:#fff;font-size:12px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;box-shadow:0 0 10px rgba(168,85,247,0.3)">전체</button>
+    <button onclick="filterTx('deposit',this)" class="tx-filter" style="flex:1;padding:9px;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.2);border-radius:10px;color:var(--green);font-size:12px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer">입금</button>
+    <button onclick="filterTx('withdraw',this)" class="tx-filter" style="flex:1;padding:9px;background:rgba(255,59,92,0.08);border:1px solid rgba(255,59,92,0.2);border-radius:10px;color:var(--red);font-size:12px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer">출금</button>
+  </div>
+
+  <div id="tx-list"></div>
+
+  <!-- Logout button -->
+  <div style="margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06)">
+    <button onclick="doLogout()" style="width:100%;padding:13px;background:transparent;border:1px solid rgba(255,59,92,0.3);border-radius:13px;color:rgba(255,100,120,0.8);font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s">로그아웃</button>
+  </div>
+</div>
+
 </div><!-- /app-wrap -->
 
 <!-- BOTTOM NAV -->
@@ -952,6 +1033,79 @@ function loginOK(u){
   document.getElementById('t-user').style.display='inline';
   document.getElementById('logout-btn').style.display='inline';
   document.getElementById('cur-plan').textContent=u.plan&&u.plan!=='none'?u.plan:'플랜 없음';
+}
+
+// 샘플 거래내역 (실제로는 DB에서 가져옴)
+const sampleTx = [
+  {type:'deposit', coin:'USDT',network:'TRC20',amount:500000,usd:350,date:'2025.07.10 14:32',hash:'TXabc...def1',status:'완료'},
+  {type:'withdraw',coin:'USDT',network:'TRC20',amount:150000,usd:105,date:'2025.07.08 09:15',hash:'TX123...456a',status:'완료'},
+  {type:'deposit', coin:'BTC', network:'BTC', amount:1000000,usd:700,date:'2025.07.01 18:45',hash:'bc1q...xyz9',status:'완료'},
+  {type:'withdraw',coin:'ETH', network:'ERC20',amount:200000,usd:140,date:'2025.06.28 11:20',hash:'0xabc...789b',status:'완료'},
+  {type:'deposit', coin:'USDT',network:'ERC20',amount:2000000,usd:1400,date:'2025.06.15 16:00',hash:'0x111...222c',status:'완료'},
+];
+
+let currentFilter = 'all';
+
+function loadProfile(){
+  if(!me) return;
+  document.getElementById('prof-avatar').textContent = me.username[0].toUpperCase();
+  document.getElementById('prof-username').textContent = me.username;
+  document.getElementById('prof-plan').textContent = me.plan && me.plan!=='none' ? me.plan+' 플랜' : '플랜 없음';
+  document.getElementById('prof-uid').textContent = me.user_id || '로딩 중...';
+  document.getElementById('prof-email').textContent = me.email || '-';
+  const d = me.created_at ? new Date(me.created_at) : null;
+  document.getElementById('prof-date').textContent = d ? d.getFullYear()+'.'+(d.getMonth()+1).toString().padStart(2,'0')+'.'+d.getDate().toString().padStart(2,'0') : '-';
+  document.getElementById('prof-profit').textContent = krw(me.total_profit||0);
+  renderTx('all');
+}
+
+function renderTx(filter){
+  currentFilter = filter;
+  const list = filter==='all' ? sampleTx : sampleTx.filter(t=>t.type===filter);
+  const el = document.getElementById('tx-list');
+  if(!list.length){
+    el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3);font-size:14px">거래 내역이 없습니다</div>`;
+    return;
+  }
+  el.innerHTML = list.map(tx=>{
+    const isIn = tx.type==='deposit';
+    const color = isIn ? 'var(--green)' : 'var(--red)';
+    const bg = isIn ? 'rgba(0,230,118,0.08)' : 'rgba(255,59,92,0.08)';
+    const border = isIn ? 'rgba(0,230,118,0.2)' : 'rgba(255,59,92,0.2)';
+    const sign = isIn ? '+' : '-';
+    return `<div style="background:rgba(14,12,30,0.7);border:1px solid rgba(139,92,246,0.15);border-radius:14px;padding:16px;margin-bottom:10px;transition:all .2s">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:36px;border-radius:10px;background:${bg};border:1px solid ${border};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${color}">${tx.coin}</div>
+          <div>
+            <div style="font-size:14px;font-weight:700">${isIn?'입금':'출금'} · ${tx.network}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${tx.date}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'Inter',sans-serif;font-size:15px;font-weight:700;color:${color};text-shadow:0 0 6px ${color.replace(')',',0.3)'}.replace('var','').replace('(','rgba(')}">${sign}${krw(tx.amount)}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">≈ $${tx.usd}</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:11px;color:var(--text3);font-family:'Inter',sans-serif">TX: ${tx.hash}</div>
+        <div style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:rgba(0,230,118,0.1);color:var(--green);border:1px solid rgba(0,230,118,0.2)">${tx.status}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterTx(f, el){
+  document.querySelectorAll('.tx-filter').forEach(b=>{
+    b.style.background = 'rgba(255,255,255,0.04)';
+    b.style.borderColor = 'rgba(255,255,255,0.1)';
+    b.style.color = 'var(--text3)';
+    b.style.boxShadow = 'none';
+  });
+  if(f==='all'){el.style.background='linear-gradient(135deg,var(--purple2),var(--purple))';el.style.borderColor='transparent';el.style.color='#fff';el.style.boxShadow='0 0 10px rgba(168,85,247,0.3)'}
+  else if(f==='deposit'){el.style.background='rgba(0,230,118,0.12)';el.style.borderColor='rgba(0,230,118,0.3)';el.style.color='var(--green)';el.style.boxShadow='0 0 8px rgba(0,230,118,0.15)'}
+  else{el.style.background='rgba(255,59,92,0.12)';el.style.borderColor='rgba(255,59,92,0.3)';el.style.color='var(--red)';el.style.boxShadow='0 0 8px rgba(255,59,92,0.15)'}
+  renderTx(f);
 }
 
 function doLogout(){
