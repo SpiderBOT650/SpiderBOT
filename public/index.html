@@ -722,39 +722,52 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 <!-- CALCULATOR -->
 <div class="page" id="page-calc">
 
-  <!-- Title -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
     <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;text-shadow:0 0 10px rgba(168,85,247,0.3)">수익 계산기</div>
     <div class="ic">i</div>
   </div>
 
   <!-- 투자 금액 -->
-  <div style="margin-bottom:20px">
+  <div style="margin-bottom:22px">
     <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">투자 금액</div>
-    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(139,92,246,0.25);border-radius:14px;padding:4px 6px;margin-bottom:10px;display:flex;align-items:center">
-      <input id="c-amt-disp" type="text" readonly
-        style="flex:1;background:none;border:none;outline:none;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--text);padding:10px 12px;cursor:default"
-        placeholder="0 원" value="">
-      <button onclick="resetAmt()" style="background:rgba(255,255,255,0.06);border:none;border-radius:9px;color:var(--text3);font-size:12px;padding:7px 12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-right:4px">초기화</button>
+
+    <!-- 직접 입력 -->
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(139,92,246,0.25);border-radius:14px;padding:4px 6px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+      <input id="c-amt-input" type="number" inputmode="numeric" min="0"
+        placeholder="직접 입력 (원)"
+        oninput="onAmtInput(this.value)"
+        style="flex:1;background:none;border:none;outline:none;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--text);padding:10px 12px;min-width:0">
+      <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--text3);padding-right:6px">원</span>
+      <button onclick="resetAmt()" style="background:rgba(255,255,255,0.06);border:none;border-radius:9px;color:var(--text3);font-size:12px;padding:8px 12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;flex-shrink:0;white-space:nowrap">초기화</button>
     </div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;padding:0 2px" id="c-range-hint">범위: 10,000원 ~ 100,000원</div>
-    <!-- Quick add buttons -->
+
+    <!-- 금액 표시 -->
+    <div id="c-amt-disp" style="font-size:13px;color:var(--purple-light);font-weight:700;padding:0 4px;margin-bottom:10px;min-height:20px;text-shadow:0 0 8px rgba(192,132,252,0.3)"></div>
+
+    <!-- 빠른 추가 버튼 -->
     <div style="display:flex;gap:7px;flex-wrap:wrap">
       <button class="qadd-btn" onclick="addAmt(10000)">+1만</button>
       <button class="qadd-btn" onclick="addAmt(50000)">+5만</button>
       <button class="qadd-btn" onclick="addAmt(100000)">+10만</button>
-      <button class="qadd-btn" onclick="addAmt(500000)">+50만</button>
       <button class="qadd-btn" onclick="addAmt(1000000)">+100만</button>
+      <button class="qadd-btn" onclick="addAmt(10000000)">+1000만</button>
     </div>
   </div>
 
   <!-- 기간 -->
-  <div style="margin-bottom:20px">
+  <div style="margin-bottom:22px">
     <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">기간</div>
-    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(139,92,246,0.25);border-radius:14px;padding:14px 18px;margin-bottom:10px">
-      <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--text)" id="c-days-disp">7 일</span>
+
+    <!-- 직접 입력 -->
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(139,92,246,0.25);border-radius:14px;padding:4px 6px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+      <input id="c-days-input" type="number" inputmode="numeric" min="1" max="3650"
+        placeholder="직접 입력"
+        oninput="onDaysInput(this.value)"
+        style="flex:1;background:none;border:none;outline:none;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--text);padding:10px 12px;min-width:0">
+      <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--text3);padding-right:12px">일</span>
     </div>
-    <!-- Period buttons -->
+
+    <!-- 빠른 기간 버튼 -->
     <div style="display:flex;gap:8px">
       <button class="period-btn" onclick="setPeriod(this,1)">1 일</button>
       <button class="period-btn on" onclick="setPeriod(this,7)">7 일</button>
@@ -763,33 +776,24 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     </div>
   </div>
 
-  <!-- 플랜 선택 -->
-  <div style="margin-bottom:20px">
-    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">플랜 선택 (일 ROI)</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button class="plan-rate-btn" onclick="setCalcRate(this,2,'Starter')">2%<br><span>Starter</span></button>
-      <button class="plan-rate-btn" onclick="setCalcRate(this,2.5,'Bronze')">2.5%<br><span>Bronze</span></button>
-      <button class="plan-rate-btn on" onclick="setCalcRate(this,4,'Silver')">4%<br><span>Silver</span></button>
-      <button class="plan-rate-btn" onclick="setCalcRate(this,6,'Gold')">6%<br><span>Gold</span></button>
-      <button class="plan-rate-btn" onclick="setCalcRate(this,8,'Plat')">8%<br><span>Plat</span></button>
-      <button class="plan-rate-btn" onclick="setCalcRate(this,9.5,'Dia')">9.5%<br><span>Dia</span></button>
-      <button class="plan-rate-btn" onclick="setCalcRate(this,11,'Royal')">11%<br><span>Royal</span></button>
-      <button class="plan-rate-btn" onclick="setCalcRate(this,12.5,'Imp')">12.5%<br><span>Imp</span></button>
-      <button class="plan-rate-btn" onclick="setCalcRate(this,14,'Dyn')">14%<br><span>Dyn</span></button>
-      <button class="plan-rate-btn" onclick="setCalcRate(this,15,'Legacy')">15%<br><span>Legacy</span></button>
-    </div>
-  </div>
-
   <!-- 결과 카드 -->
   <div style="background:linear-gradient(135deg,rgba(5,30,18,0.95),rgba(8,40,22,0.95));border:1px solid rgba(0,230,118,0.25);border-radius:20px;padding:22px;margin-bottom:16px;box-shadow:0 0 30px rgba(0,230,118,0.06)">
-    <!-- Header -->
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-      <div style="width:42px;height:42px;border-radius:12px;background:rgba(0,230,118,0.15);border:1px solid rgba(0,230,118,0.3);display:flex;align-items:center;justify-content:center">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+
+    <!-- 헤더 (현재 플랜 + ROI) -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:42px;height:42px;border-radius:12px;background:rgba(0,230,118,0.15);border:1px solid rgba(0,230,118,0.3);display:flex;align-items:center;justify-content:center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">예상 결과</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--text)">수익 계산</div>
+        </div>
       </div>
-      <div>
-        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">예상 결과</div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--text)">수익 계산</div>
+      <!-- 현재 플랜 뱃지 -->
+      <div style="text-align:right">
+        <div id="c-plan-name" style="font-size:11px;font-weight:700;color:var(--purple-light);text-shadow:0 0 6px rgba(192,132,252,0.4);letter-spacing:.5px">금액을 입력하세요</div>
+        <div id="c-plan-roi" style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);text-shadow:0 0 10px rgba(0,230,118,0.4);letter-spacing:1px">- %</div>
       </div>
     </div>
 
@@ -810,7 +814,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       </div>
       <div style="background:rgba(0,0,0,0.2);border-radius:12px;padding:14px">
         <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">일일 ROI</div>
-        <div id="c-roi" style="font-family:'Inter',sans-serif;font-size:18px;font-weight:800;color:var(--green);text-shadow:0 0 10px rgba(0,230,118,0.3)">4%</div>
+        <div id="c-roi" style="font-family:'Inter',sans-serif;font-size:18px;font-weight:800;color:var(--green);text-shadow:0 0 10px rgba(0,230,118,0.3)">- %</div>
       </div>
     </div>
 
@@ -822,13 +826,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   </div>
 
   <!-- CTA 버튼 -->
-  <button id="calc-cta" onclick="goPage('plans',document.getElementById('ni-plans'))"
-    style="width:100%;padding:17px;background:linear-gradient(135deg,#00B85C,#00E676);border:none;border-radius:14px;color:#001A0D;font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;box-shadow:0 0 20px rgba(0,230,118,0.35),0 0 40px rgba(0,230,118,0.15);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.3px;margin-bottom:12px">
+  <button onclick="goPage('plans',document.getElementById('ni-plans'))"
+    style="width:100%;padding:17px;background:linear-gradient(135deg,#00B85C,#00E676);border:none;border-radius:14px;color:#001A0D;font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;box-shadow:0 0 20px rgba(0,230,118,0.35);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.3px;margin-bottom:12px">
     <span id="cta-txt">계속하려면 금액을 입력하세요</span>
     <span style="font-size:18px">→</span>
   </button>
 
-  <div style="text-align:center;font-size:11px;color:var(--text3);letter-spacing:.3px">현재 선택한 플랜 요율 기반 예상 결과</div>
+  <div style="text-align:center;font-size:11px;color:var(--text3);letter-spacing:.3px">금액에 맞는 플랜 ROI 기반 예상 결과 · 최대 3,650일</div>
 </div>
 
 
@@ -1319,117 +1323,125 @@ document.addEventListener('keydown',e=>{
 // ═══════════════════
 let botOn=true, crate=4;
 let calcAmt=0, calcDays=7;
-let calcPlanIdx=2;
+let calcPlanIdx=-1;
 
 function krw(n){return Math.round(n).toLocaleString('ko-KR')+'원'}
 
 const PLANS=[
-  {name:'Starter', label:'Starter', rate:2,    min:10000,      max:100000},
-  {name:'브론즈',   label:'Bronze',  rate:2.5,  min:100000,     max:500000},
-  {name:'실버',    label:'Silver',  rate:4,    min:500000,     max:1000000},
-  {name:'골드',    label:'Gold',    rate:6,    min:1000000,    max:5000000},
-  {name:'플래티넘', label:'Plat',    rate:8,    min:5000000,    max:10000000},
-  {name:'다이아',  label:'Dia',     rate:9.5,  min:10000000,   max:25000000},
-  {name:'로열',    label:'Royal',   rate:11,   min:25000000,   max:75000000},
-  {name:'임페리얼', label:'Imp',     rate:12.5, min:75000000,   max:100000000},
-  {name:'다이너스티',label:'Dyn',    rate:14,   min:100000000,  max:150000000},
-  {name:'레거시',  label:'Legacy',  rate:15,   min:150000000,  max:Infinity},
+  {name:'Starter',  rate:2,    min:10000,      max:99999},
+  {name:'Bronze',   rate:2.5,  min:100000,     max:499999},
+  {name:'Silver',   rate:4,    min:500000,     max:999999},
+  {name:'Gold',     rate:6,    min:1000000,    max:4999999},
+  {name:'Platinum', rate:8,    min:5000000,    max:9999999},
+  {name:'Diamond',  rate:9.5,  min:10000000,   max:24999999},
+  {name:'Royal',    rate:11,   min:25000000,   max:74999999},
+  {name:'Imperial', rate:12.5, min:75000000,   max:99999999},
+  {name:'Dynasty',  rate:14,   min:100000000,  max:149999999},
+  {name:'Legacy',   rate:15,   min:150000000,  max:Infinity},
 ];
+const MAX_AMT = 1000000000000000; // 1000조
+const MAX_DAYS = 3650;
 
-function findPlanByAmt(amt){
-  if(amt<=0) return 2; // default Silver
+function findPlan(amt){
+  if(amt<=0) return null;
   for(let i=0;i<PLANS.length;i++){
-    if(amt >= PLANS[i].min && amt < (PLANS[i].max===Infinity?Infinity:PLANS[i].max+1)){
-      return i;
-    }
+    if(amt>=PLANS[i].min && (PLANS[i].max===Infinity||amt<=PLANS[i].max)) return i;
   }
-  if(amt >= PLANS[PLANS.length-1].min) return PLANS.length-1;
-  return 0;
-}
-
-function highlightPlanBtn(idx){
-  document.querySelectorAll('.plan-rate-btn').forEach((b,i)=>{
-    b.classList.toggle('on', i===idx);
-  });
+  return null;
 }
 
 function addAmt(v){
-  calcAmt += v;
-  // 자동으로 금액에 맞는 플랜 선택
-  const idx = findPlanByAmt(calcAmt);
-  if(idx !== calcPlanIdx){
-    calcPlanIdx = idx;
-    crate = PLANS[idx].rate;
-    highlightPlanBtn(idx);
-    showToast(PLANS[idx].name+' 플랜으로 자동 전환됐습니다');
-  }
-  updateCalcDisplay();
+  calcAmt = Math.min(calcAmt+v, MAX_AMT);
+  document.getElementById('c-amt-input').value = calcAmt||'';
+  updateCalc();
 }
 
 function resetAmt(){
   calcAmt=0;
-  updateCalcDisplay();
+  document.getElementById('c-amt-input').value='';
+  updateCalc();
 }
 
-function setPeriod(el,days){
-  calcDays=days;
-  document.getElementById('c-days-disp').textContent=days+' 일';
+function onAmtInput(val){
+  calcAmt = Math.min(Math.max(0, parseInt(val)||0), MAX_AMT);
+  updateCalc();
+}
+
+function setPeriod(el, days){
+  calcDays = days;
+  document.getElementById('c-days-input').value = days;
   document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
-  updateCalcDisplay();
+  updateCalc();
 }
 
-function setCalcRate(el, rate, label){
-  const idx = PLANS.findIndex(p=>p.rate===rate);
-  if(idx<0) return;
-  calcPlanIdx = idx;
-  crate = rate;
-  const plan = PLANS[idx];
-
-  // 금액이 플랜 범위 밖이면 (최소 미만 OR 최대 초과) → 최소금액으로 변경
-  const outOfRange = calcAmt < plan.min || (plan.max !== Infinity && calcAmt > plan.max);
-  if(outOfRange){
-    calcAmt = plan.min;
-    showToast(plan.name+' 플랜 기준 '+plan.min.toLocaleString('ko-KR')+'원으로 변경됐습니다');
+function onDaysInput(val){
+  const d = parseInt(val)||0;
+  calcDays = Math.min(Math.max(1,d), MAX_DAYS);
+  // 최댓값 초과 입력시 보정
+  if(d > MAX_DAYS){
+    document.getElementById('c-days-input').value = MAX_DAYS;
+    showToast('최대 '+MAX_DAYS.toLocaleString()+'일까지 계산 가능합니다');
   }
-
-  highlightPlanBtn(idx);
-  updateCalcDisplay();
+  // 빠른 선택 버튼 해제
+  document.querySelectorAll('.period-btn').forEach(b=>{
+    b.classList.toggle('on', parseInt(b.textContent)===calcDays);
+  });
+  updateCalc();
 }
 
-function updateCalcDisplay(){
-  const plan = PLANS[calcPlanIdx];
-  const amtEl = document.getElementById('c-amt-disp');
-  amtEl.value = calcAmt>0 ? calcAmt.toLocaleString('ko-KR')+'원' : '';
-  amtEl.placeholder = '금액을 선택하세요';
+function updateCalc(){
+  const idx = findPlan(calcAmt);
+  const plan = idx!==null ? PLANS[idx] : null;
+  const rate = plan ? plan.rate : 0;
 
-  // 플랜 범위 안내 업데이트
-  const rangeEl = document.getElementById('c-range-hint');
-  if(rangeEl){
-    const maxTxt = plan.max===Infinity ? '무한' : plan.max.toLocaleString('ko-KR')+'원';
-    rangeEl.textContent = plan.name+' 플랜: '+plan.min.toLocaleString('ko-KR')+'원 ~ '+maxTxt;
-    rangeEl.style.color = 'var(--purple-light)';
+  // 금액 표시
+  const dispEl = document.getElementById('c-amt-disp');
+  if(calcAmt>0){
+    dispEl.textContent = calcAmt.toLocaleString('ko-KR')+'원';
+  } else {
+    dispEl.textContent = '';
   }
 
-  const daily = calcAmt * crate / 100;
+  // 플랜 / ROI 표시
+  const planNameEl = document.getElementById('c-plan-name');
+  const planRoiEl  = document.getElementById('c-plan-roi');
+  if(plan){
+    planNameEl.textContent = plan.name+' 플랜 적용';
+    planNameEl.style.color = 'var(--green)';
+    planRoiEl.textContent  = rate+'%';
+  } else if(calcAmt>0){
+    planNameEl.textContent = '범위 초과';
+    planNameEl.style.color = 'var(--red)';
+    planRoiEl.textContent  = '- %';
+  } else {
+    planNameEl.textContent = '금액을 입력하세요';
+    planNameEl.style.color = 'var(--text3)';
+    planRoiEl.textContent  = '- %';
+  }
+
+  // 계산
+  const daily = calcAmt * rate / 100;
   const total = daily * calcDays;
   const final = calcAmt + total;
-  const pct   = calcAmt>0 ? (total/calcAmt*100).toFixed(1) : '0.0';
+  const pct   = calcAmt>0 && rate>0 ? (total/calcAmt*100).toFixed(1) : '0.0';
 
   document.getElementById('c-daily').textContent = '₩'+Math.round(daily).toLocaleString('ko-KR');
   document.getElementById('c-total').textContent = '₩'+Math.round(total).toLocaleString('ko-KR');
   document.getElementById('c-final').textContent = '₩'+Math.round(final).toLocaleString('ko-KR');
   document.getElementById('c-pct').textContent   = '+'+pct+'%';
-  document.getElementById('c-roi').textContent   = crate+'%';
+  document.getElementById('c-roi').textContent   = rate>0 ? rate+'%' : '- %';
 
   const ctaTxt = document.getElementById('cta-txt');
-  if(calcAmt>0){
+  if(calcAmt>0 && rate>0){
     ctaTxt.textContent = calcDays+'일 후 ₩'+Math.round(total).toLocaleString('ko-KR')+' 수익 예상';
   } else {
     ctaTxt.textContent = '계속하려면 금액을 입력하세요';
   }
 }
-updateCalcDisplay();
+// 초기화
+document.getElementById('c-days-input').value = 7;
+updateCalc();
 
 const invs=[
   {n:'김민준',id:'SB-1042',plan:'Silver',inv:500000,rate:4,days:178,st:'대기'},
