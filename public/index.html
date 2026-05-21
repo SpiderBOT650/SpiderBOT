@@ -737,7 +737,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
         placeholder="0 원" value="">
       <button onclick="resetAmt()" style="background:rgba(255,255,255,0.06);border:none;border-radius:9px;color:var(--text3);font-size:12px;padding:7px 12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-right:4px">초기화</button>
     </div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;padding:0 2px">범위: 10,000원 ~ 150,000,000원+</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;padding:0 2px" id="c-range-hint">범위: 10,000원 ~ 100,000원</div>
     <!-- Quick add buttons -->
     <div style="display:flex;gap:7px;flex-wrap:wrap">
       <button class="qadd-btn" onclick="addAmt(10000)">+1만</button>
@@ -1317,48 +1317,101 @@ document.addEventListener('keydown',e=>{
 // ═══════════════════
 // APP
 // ═══════════════════
-let botOn=true,crate=4;
+let botOn=true, crate=4;
 let calcAmt=0, calcDays=7;
+let calcPlanIdx=2;
 
 function krw(n){return Math.round(n).toLocaleString('ko-KR')+'원'}
-function krwShort(n){
-  n=Math.round(n);
-  if(n>=100000000) return (n/100000000).toFixed(1)+'억원';
-  if(n>=10000) return (n/10000).toFixed(n%10000===0?0:1)+'만원';
-  return n.toLocaleString('ko-KR')+'원';
+
+const PLANS=[
+  {name:'Starter', label:'Starter', rate:2,    min:10000,      max:100000},
+  {name:'브론즈',   label:'Bronze',  rate:2.5,  min:100000,     max:500000},
+  {name:'실버',    label:'Silver',  rate:4,    min:500000,     max:1000000},
+  {name:'골드',    label:'Gold',    rate:6,    min:1000000,    max:5000000},
+  {name:'플래티넘', label:'Plat',    rate:8,    min:5000000,    max:10000000},
+  {name:'다이아',  label:'Dia',     rate:9.5,  min:10000000,   max:25000000},
+  {name:'로열',    label:'Royal',   rate:11,   min:25000000,   max:75000000},
+  {name:'임페리얼', label:'Imp',     rate:12.5, min:75000000,   max:100000000},
+  {name:'다이너스티',label:'Dyn',    rate:14,   min:100000000,  max:150000000},
+  {name:'레거시',  label:'Legacy',  rate:15,   min:150000000,  max:Infinity},
+];
+
+function findPlanByAmt(amt){
+  if(amt<=0) return 2; // default Silver
+  for(let i=0;i<PLANS.length;i++){
+    if(amt >= PLANS[i].min && amt < (PLANS[i].max===Infinity?Infinity:PLANS[i].max+1)){
+      return i;
+    }
+  }
+  if(amt >= PLANS[PLANS.length-1].min) return PLANS.length-1;
+  return 0;
+}
+
+function highlightPlanBtn(idx){
+  document.querySelectorAll('.plan-rate-btn').forEach((b,i)=>{
+    b.classList.toggle('on', i===idx);
+  });
 }
 
 function addAmt(v){
   calcAmt += v;
+  // 자동으로 금액에 맞는 플랜 선택
+  const idx = findPlanByAmt(calcAmt);
+  if(idx !== calcPlanIdx){
+    calcPlanIdx = idx;
+    crate = PLANS[idx].rate;
+    highlightPlanBtn(idx);
+    showToast(PLANS[idx].name+' 플랜으로 자동 전환됐습니다');
+  }
   updateCalcDisplay();
 }
+
 function resetAmt(){
-  calcAmt = 0;
+  calcAmt=0;
   updateCalcDisplay();
 }
-function setPeriod(el, days){
-  calcDays = days;
-  document.getElementById('c-days-disp').textContent = days+' 일';
+
+function setPeriod(el,days){
+  calcDays=days;
+  document.getElementById('c-days-disp').textContent=days+' 일';
   document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
   updateCalcDisplay();
 }
-function setCalcRate(el, rate, name){
+
+function setCalcRate(el, rate, label){
+  // 플랜 선택 시 최소금액 강제 적용
+  const idx = PLANS.findIndex(p=>p.rate===rate);
+  if(idx<0) return;
+  calcPlanIdx = idx;
   crate = rate;
-  document.querySelectorAll('.plan-rate-btn').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-  document.getElementById('c-roi').textContent = rate+'%';
+  const plan = PLANS[idx];
+  if(calcAmt < plan.min){
+    calcAmt = plan.min;
+    showToast(plan.name+' 플랜 최소 금액 '+plan.min.toLocaleString('ko-KR')+'원으로 설정됐습니다');
+  }
+  highlightPlanBtn(idx);
   updateCalcDisplay();
 }
+
 function updateCalcDisplay(){
+  const plan = PLANS[calcPlanIdx];
   const amtEl = document.getElementById('c-amt-disp');
   amtEl.value = calcAmt>0 ? calcAmt.toLocaleString('ko-KR')+'원' : '';
-  amtEl.placeholder = calcAmt>0 ? '' : '금액을 선택하세요';
+  amtEl.placeholder = '금액을 선택하세요';
+
+  // 플랜 범위 안내 업데이트
+  const rangeEl = document.getElementById('c-range-hint');
+  if(rangeEl){
+    const maxTxt = plan.max===Infinity ? '무한' : plan.max.toLocaleString('ko-KR')+'원';
+    rangeEl.textContent = plan.name+' 플랜: '+plan.min.toLocaleString('ko-KR')+'원 ~ '+maxTxt;
+    rangeEl.style.color = 'var(--purple-light)';
+  }
 
   const daily = calcAmt * crate / 100;
   const total = daily * calcDays;
   const final = calcAmt + total;
-  const pct   = calcAmt > 0 ? (total/calcAmt*100).toFixed(1) : '0.0';
+  const pct   = calcAmt>0 ? (total/calcAmt*100).toFixed(1) : '0.0';
 
   document.getElementById('c-daily').textContent = '₩'+Math.round(daily).toLocaleString('ko-KR');
   document.getElementById('c-total').textContent = '₩'+Math.round(total).toLocaleString('ko-KR');
@@ -1367,13 +1420,12 @@ function updateCalcDisplay(){
   document.getElementById('c-roi').textContent   = crate+'%';
 
   const ctaTxt = document.getElementById('cta-txt');
-  if(calcAmt > 0){
+  if(calcAmt>0){
     ctaTxt.textContent = calcDays+'일 후 ₩'+Math.round(total).toLocaleString('ko-KR')+' 수익 예상';
   } else {
     ctaTxt.textContent = '계속하려면 금액을 입력하세요';
   }
 }
-// init
 updateCalcDisplay();
 
 const invs=[
@@ -1438,7 +1490,6 @@ function loadProfile(){
     </div>`).join('');
 }
 
-function krw(n){return Math.round(n).toLocaleString('ko-KR')+'원'}
 function toggleBot(){
   botOn=!botOn;
   const el=document.getElementById('bottxt'),p=el.parentElement;
