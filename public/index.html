@@ -2,1577 +2,790 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>SpiderBOT</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;500;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{
-  --bg:#07060F;--bg2:#0E0C1E;--bg3:#141228;--bg4:#1C1A35;
-  --border:rgba(139,92,246,0.2);--border2:rgba(139,92,246,0.45);
-  --green:#00E676;--green-glow:rgba(0,230,118,0.35);
-  --purple:#A855F7;--purple2:#7C3AED;--purple-light:#C084FC;
-  --purple-glow:rgba(168,85,247,0.4);--purple-glow2:rgba(124,58,237,0.25);
-  --red:#FF3B5C;--text:#FFFFFF;--text2:#9B97B8;--text3:#5A5680;
-  --neon-purple:0 0 8px rgba(168,85,247,0.8),0 0 20px rgba(168,85,247,0.4),0 0 40px rgba(124,58,237,0.2);
-  --neon-green:0 0 8px rgba(0,230,118,0.8),0 0 20px rgba(0,230,118,0.4),0 0 40px rgba(0,230,118,0.2);
-  --neon-border-purple:0 0 6px rgba(168,85,247,0.6),inset 0 0 6px rgba(168,85,247,0.1);
-}
-html{font-size:16px}
-body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-
-/* ═══════════════════════════════
-   AUTH OVERLAY
-═══════════════════════════════ */
-#auth-wrap{
-  position:fixed;inset:0;z-index:500;
-  background:var(--bg);
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  padding:24px 20px;overflow-y:auto;
-}
-#auth-wrap.hidden{display:none}
-
-/* Spider web canvas */
-#web-canvas{
-  position:fixed;inset:0;z-index:0;
-  pointer-events:none;opacity:0.55;
-}
-
-/* Auth content above canvas */
-.auth-content{
-  position:relative;z-index:2;
-  width:100%;display:flex;flex-direction:column;
-  align-items:center;
-}
-
-.auth-logo{text-align:center;margin-bottom:32px}
-.auth-logo-name{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(52px,10vw,72px);
-  letter-spacing:8px;line-height:1;
-  background:linear-gradient(180deg,#fff 0%,#eee 20%,#C084FC 50%,#7C3AED 80%,#A855F7 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  text-shadow:none;
-  filter:drop-shadow(0 0 20px rgba(168,85,247,0.6)) drop-shadow(0 0 40px rgba(124,58,237,0.3));
-}
-.auth-logo-sub{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(11px,2vw,14px);
-  letter-spacing:5px;color:var(--purple-light);
-  margin-top:6px;
-  text-shadow:0 0 10px rgba(192,132,252,0.6);
-}
-
-.auth-card{
-  width:100%;max-width:440px;
-  background:rgba(14,12,30,0.85);
-  border:1px solid rgba(168,85,247,0.35);
-  border-radius:24px;padding:28px 24px;
-  backdrop-filter:blur(20px);
-  box-shadow:var(--neon-border-purple),0 20px 60px rgba(0,0,0,0.5);
-}
-
-.tab-row{display:flex;background:rgba(255,255,255,0.04);border-radius:12px;padding:4px;margin-bottom:24px;gap:4px}
-.tab{flex:1;padding:11px;text-align:center;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;color:var(--text3);transition:all .2s;letter-spacing:.5px}
-.tab.on{background:linear-gradient(135deg,var(--purple2),var(--purple));color:#fff;box-shadow:var(--neon-purple)}
-
-.fg{margin-bottom:14px}
-.fl{font-size:11px;color:var(--text2);margin-bottom:7px;display:block;font-weight:500;letter-spacing:.5px;text-transform:uppercase}
-.fi{
-  width:100%;background:rgba(255,255,255,0.04);
-  border:1px solid rgba(139,92,246,0.2);
-  border-radius:12px;padding:13px 16px;
-  font-size:15px;color:var(--text);
-  font-family:'Noto Sans KR',sans-serif;
-  outline:none;transition:all .2s;
-}
-.fi:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(168,85,247,0.15),0 0 12px rgba(168,85,247,0.2)}
-.pw-wrap{position:relative}
-.pw-eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px;font-family:'Noto Sans KR',sans-serif}
-
-.abtn{
-  width:100%;padding:14px;margin-top:6px;
-  background:linear-gradient(135deg,var(--purple2),var(--purple));
-  border:none;border-radius:13px;
-  color:#fff;font-size:15px;font-weight:700;
-  font-family:'Noto Sans KR',sans-serif;cursor:pointer;
-  box-shadow:var(--neon-purple);
-  transition:all .2s;letter-spacing:.5px;
-}
-.abtn:hover{box-shadow:0 0 15px rgba(168,85,247,0.9),0 0 30px rgba(168,85,247,0.5),0 0 60px rgba(124,58,237,0.3)}
-.abtn:active{transform:scale(.98)}
-.abtn:disabled{opacity:.6;cursor:default;box-shadow:none}
-
-.aerr{background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.3);border-radius:10px;padding:11px 14px;font-size:13px;color:#FF8090;margin-bottom:14px;display:none;line-height:1.6}
-.aerr.show{display:block}
-.aok{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.3);border-radius:10px;padding:11px 14px;font-size:13px;color:var(--green);margin-bottom:14px;display:none;line-height:1.6;text-shadow:0 0 8px rgba(0,230,118,0.4)}
-.aok.show{display:block}
-
-.pw-rules{background:rgba(255,255,255,.03);border:1px solid rgba(139,92,246,0.12);border-radius:10px;padding:12px 14px;margin-bottom:14px}
-.pw-rules-title{font-size:11px;color:var(--text3);margin-bottom:7px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-.rule{font-size:12px;color:var(--text3);margin-bottom:4px;padding-left:2px;transition:color .2s}
-.rule.ok{color:var(--green);text-shadow:0 0 6px rgba(0,230,118,0.4)}
-.rule.ok::before{content:'+ '}
-.rule.no::before{content:'- '}
-
-.lbtn{background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;text-decoration:none;font-family:'Noto Sans KR',sans-serif;margin-top:14px;display:block;text-align:center;width:100%;transition:color .2s}
-.lbtn:hover{color:var(--purple-light);text-shadow:0 0 8px rgba(192,132,252,0.5)}
-
-.vbanner{
-  width:100%;max-width:440px;
-  background:rgba(7,26,16,0.9);
-  border:1px solid rgba(0,230,118,.4);
-  border-radius:16px;padding:16px 20px;
-  margin-bottom:20px;text-align:center;
-  display:none;
-  box-shadow:0 0 20px rgba(0,230,118,0.15);
-}
-.vbanner-title{font-size:14px;font-weight:700;color:var(--green);text-shadow:var(--neon-green)}
-.vbanner-sub{font-size:12px;color:var(--text2);margin-top:4px}
-
-/* ═══════════════════════════════
-   TOPBAR
-═══════════════════════════════ */
-.topbar{
-  position:sticky;top:0;z-index:100;
-  background:rgba(7,6,15,0.92);
-  backdrop-filter:blur(20px);
-  padding:12px 20px;
-  display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid rgba(168,85,247,0.2);
-  box-shadow:0 1px 20px rgba(168,85,247,0.08);
-}
-.t-brand{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(20px,3vw,26px);
-  letter-spacing:5px;line-height:1;
-  background:linear-gradient(180deg,#fff 0%,#eee 30%,#C084FC 65%,#A855F7 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  filter:drop-shadow(0 0 8px rgba(168,85,247,0.5));
-}
-.t-right{display:flex;align-items:center;gap:10px}
-.tic{height:33px;padding:0 12px;background:rgba(255,255,255,.05);border:1px solid rgba(139,92,246,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text2);cursor:pointer;font-weight:500;transition:all .2s;white-space:nowrap}
-.tic:hover{border-color:var(--purple);color:var(--purple-light);box-shadow:0 0 8px rgba(168,85,247,0.2)}
-#t-user{font-size:12px;font-weight:700;color:var(--purple-light);display:none;text-shadow:0 0 8px rgba(192,132,252,0.5)}
-#logout-btn{background:none;border:1px solid rgba(255,59,92,.3);border-radius:8px;padding:6px 12px;color:rgba(255,100,120,.8);font-size:11px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;display:none;transition:all .2s}
-#logout-btn:hover{border-color:rgba(255,59,92,.6);box-shadow:0 0 8px rgba(255,59,92,.2)}
-
-/* ═══════════════════════════════
-   APP LAYOUT (PC + Mobile)
-═══════════════════════════════ */
-.app-wrap{max-width:1200px;margin:0 auto;position:relative}
-
-.page{display:none;padding:20px 20px 100px;animation:fu .2s ease}
-.page.on{display:block}
-@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-
-/* PC: wider layout */
-@media(min-width:768px){
-  .page{padding:28px 32px 60px}
-  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
-}
-
-/* ═══════════════════════════════
-   BOTTOM NAV
-═══════════════════════════════ */
-.bnav{
-  position:fixed;bottom:0;left:0;right:0;
-  background:rgba(7,6,15,0.95);
-  backdrop-filter:blur(20px);
-  border-top:1px solid rgba(168,85,247,0.2);
-  display:flex;align-items:center;
-  padding:8px 10px 22px;
-  z-index:100;gap:4px;
-  box-shadow:0 -4px 20px rgba(168,85,247,0.08);
-}
-@media(min-width:768px){
-  .bnav{padding:10px 40px 14px;max-width:600px;left:50%;transform:translateX(-50%);border-radius:20px 20px 0 0}
-}
-.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;transition:all .2s}
-.ni-ico{font-size:18px;line-height:1}
-.ni-lbl{font-size:10px;color:var(--text3);font-weight:500;transition:all .2s}
-.ni.on .ni-lbl{color:var(--purple-light);text-shadow:0 0 8px rgba(192,132,252,0.6)}
-.ni-c{flex:none;width:56px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0}
-.ni-cb{
-  width:52px;height:52px;border-radius:16px;
-  background:linear-gradient(135deg,var(--bg3),var(--bg4));
-  border:1px solid rgba(139,92,246,.4);
-  display:flex;align-items:center;justify-content:center;
-  font-size:22px;margin-top:-22px;
-  transition:all .2s;
-}
-.ni-c.on .ni-cb{
-  background:linear-gradient(135deg,var(--purple2),var(--purple));
-  box-shadow:var(--neon-purple);
-  border-color:var(--purple);
-}
-
-/* ═══════════════════════════════
-   NEON COMPONENTS
-═══════════════════════════════ */
-.neon-card{
-  background:rgba(14,12,30,0.7);
-  border:1px solid rgba(168,85,247,0.25);
-  border-radius:18px;
-  backdrop-filter:blur(10px);
-  box-shadow:0 0 20px rgba(168,85,247,0.05),inset 0 0 20px rgba(168,85,247,0.02);
-  transition:box-shadow .3s;
-}
-.neon-card:hover{box-shadow:0 0 25px rgba(168,85,247,0.12),inset 0 0 20px rgba(168,85,247,0.03)}
-
-.neon-green-card{
-  background:rgba(7,26,16,0.7);
-  border:1px solid rgba(0,230,118,0.25);
-  border-radius:18px;
-  backdrop-filter:blur(10px);
-  box-shadow:0 0 20px rgba(0,230,118,0.05);
-}
-
-.sec-title{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(18px,3vw,22px);
-  letter-spacing:2px;color:var(--text);
-  margin:20px 0 14px;
-  display:flex;align-items:center;gap:10px;
-}
-.sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(to right,rgba(168,85,247,0.3),transparent)}
-
-/* HOME */
-.plan-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:12px}
-.plan-lbl{font-size:11px;color:var(--text3);margin-bottom:4px;letter-spacing:.5px;text-transform:uppercase}
-.plan-name-text{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(26px,5vw,32px);
-  letter-spacing:3px;color:var(--purple);
-  display:flex;align-items:center;gap:8px;
-  text-shadow:0 0 15px rgba(168,85,247,0.5);
-}
-.ic{width:17px;height:17px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text3);cursor:pointer;flex-shrink:0;font-style:italic;font-weight:700}
-.bot-btn{
-  background:linear-gradient(135deg,var(--purple2),#9333EA);
-  border:none;border-radius:20px;padding:9px 16px;
-  font-size:12px;font-weight:700;color:#fff;
-  font-family:'Noto Sans KR',sans-serif;cursor:pointer;
-  display:flex;align-items:center;gap:6px;
-  box-shadow:var(--neon-purple);
-  white-space:nowrap;flex-shrink:0;
-  transition:all .2s;
-}
-.bot-btn:hover{box-shadow:0 0 15px rgba(168,85,247,0.9),0 0 30px rgba(168,85,247,0.4)}
-
-.bal-card{
-  background:linear-gradient(135deg,rgba(20,18,40,0.9),rgba(28,26,53,0.9));
-  border:1px solid rgba(168,85,247,0.3);
-  border-radius:20px;padding:22px;margin-bottom:20px;
-  position:relative;overflow:hidden;
-  box-shadow:0 0 30px rgba(168,85,247,0.08),inset 0 0 30px rgba(168,85,247,0.03);
-}
-.bal-card::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(168,85,247,0.12),transparent 70%)}
-.bal-card::after{content:'';position:absolute;bottom:-30px;left:-30px;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle,rgba(0,230,118,0.06),transparent 70%)}
-.bal-grid{display:grid;grid-template-columns:1fr 1fr;position:relative;z-index:1}
-.bal-l{border-right:1px solid rgba(168,85,247,0.15);padding-right:16px}
-.bal-r{padding-left:16px}
-.bal-lbl{font-size:11px;color:var(--text3);margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between}
-.bal-val{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,5vw,32px);letter-spacing:1px;color:var(--text);line-height:1.1}
-.bal-div{grid-column:1/-1;height:1px;background:linear-gradient(to right,transparent,rgba(168,85,247,0.2),transparent);margin:16px 0}
-.bal-bot{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between}
-.claim-btn{
-  background:linear-gradient(135deg,#00B85C,#00E676);
-  border:none;border-radius:12px;padding:12px 24px;
-  font-size:14px;font-weight:700;color:#001A0D;
-  font-family:'Noto Sans KR',sans-serif;cursor:pointer;
-  box-shadow:var(--neon-green);
-  transition:all .2s;
-}
-.claim-btn:hover{box-shadow:0 0 15px rgba(0,230,118,0.8),0 0 30px rgba(0,230,118,0.4)}
-
-.bot-st{
-  background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:12px;padding:14px 18px;
-  text-align:center;font-size:13px;color:var(--text3);
-  margin-bottom:14px;cursor:pointer;transition:all .25s;font-weight:500;
-}
-.bot-st.on{
-  background:rgba(0,230,118,.06);
-  border-color:rgba(0,230,118,.3);color:var(--green);
-  box-shadow:0 0 15px rgba(0,230,118,0.1),inset 0 0 15px rgba(0,230,118,0.03);
-  text-shadow:0 0 8px rgba(0,230,118,0.5);
-}
-
-.act-row{display:flex;gap:8px;margin-bottom:16px;align-items:center}
-.act-btn{
-  flex:1;padding:14px;border:none;border-radius:13px;
-  font-size:14px;font-weight:700;
-  font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s;
-}
-.act-btn.on{
-  background:linear-gradient(135deg,#00C85A,#00E676);
-  color:#001A0D;box-shadow:var(--neon-green);
-}
-.act-btn.on:hover{box-shadow:0 0 15px rgba(0,230,118,0.8),0 0 30px rgba(0,230,118,0.4)}
-.act-btn.off{background:rgba(0,60,25,.3);border:1px solid rgba(0,150,60,.2);color:rgba(0,200,80,.5)}
-
-.pill-wrap{text-align:center;margin-bottom:16px}
-.pill{
-  display:inline-flex;align-items:center;gap:7px;
-  background:rgba(168,85,247,0.1);
-  border:1px solid rgba(168,85,247,.4);
-  border-radius:20px;padding:10px 20px;
-  font-size:13px;font-weight:700;color:var(--purple-light);cursor:pointer;
-  box-shadow:0 0 12px rgba(168,85,247,0.15);
-  transition:all .2s;
-}
-.pill:hover{box-shadow:var(--neon-purple);border-color:var(--purple)}
-
-.up-card{
-  background:rgba(20,18,40,0.6);
-  border:1px solid rgba(139,92,246,.25);
-  border-radius:16px;padding:16px 18px;
-  display:flex;align-items:center;gap:14px;
-  cursor:pointer;margin-bottom:18px;
-  transition:all .2s;
-}
-.up-card:hover{border-color:rgba(168,85,247,.5);box-shadow:0 0 15px rgba(168,85,247,0.1)}
-.up-ico{
-  width:42px;height:42px;border-radius:12px;
-  background:linear-gradient(135deg,var(--purple2),var(--purple));
-  display:flex;align-items:center;justify-content:center;
-  font-size:18px;flex-shrink:0;
-  box-shadow:0 0 12px rgba(168,85,247,0.4);
-}
-
-.prog-hdr{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
-.prog-bar{
-  background:rgba(255,255,255,.05);
-  border:1px solid rgba(139,92,246,0.12);
-  border-radius:10px;height:38px;
-  display:flex;align-items:center;
-  padding:0 14px;position:relative;overflow:hidden;margin-bottom:8px;
-}
-.prog-fill{
-  position:absolute;left:0;top:0;height:100%;
-  background:linear-gradient(90deg,rgba(124,58,237,0.4),rgba(168,85,247,0.7));
-  border-radius:10px;transition:width 1.5s ease;
-  box-shadow:2px 0 10px rgba(168,85,247,0.4);
-}
-.prog-lbls{position:relative;z-index:1;display:flex;justify-content:space-between;width:100%}
-.prog-lbls span{font-family:'Inter',sans-serif;font-size:13px;font-weight:600}
-.prog-hint{font-size:12px;color:var(--text3)}
-
-.hi{
-  background:rgba(14,12,30,0.6);
-  border:1px solid rgba(139,92,246,0.15);
-  border-radius:14px;padding:14px 16px;
-  margin-bottom:8px;
-  display:flex;justify-content:space-between;align-items:center;
-  transition:all .2s;
-}
-.hi:hover{border-color:rgba(168,85,247,0.3);box-shadow:0 0 12px rgba(168,85,247,0.06)}
-.ha{font-family:'Inter',sans-serif;font-size:15px;font-weight:700}
-.ha.done{color:var(--green);text-shadow:0 0 8px rgba(0,230,118,0.4)}
-.ha.wait{color:var(--purple-light);text-shadow:0 0 8px rgba(192,132,252,0.4)}
-
-/* PLANS */
-.pc{
-  background:rgba(14,12,30,0.7);
-  border:1px solid rgba(139,92,246,0.2);
-  border-radius:18px;padding:20px;margin-bottom:12px;
-  cursor:pointer;position:relative;overflow:hidden;
-  transition:all .25s;backdrop-filter:blur(8px);
-}
-.pc:hover{border-color:rgba(168,85,247,0.45);box-shadow:0 0 20px rgba(168,85,247,0.1),inset 0 0 20px rgba(168,85,247,0.02)}
-.pc.ft{border-color:rgba(168,85,247,.5);background:linear-gradient(135deg,rgba(28,21,53,0.85),rgba(34,26,64,0.85))}
-.pc.ft::after{content:'추천';position:absolute;top:14px;right:14px;background:linear-gradient(135deg,var(--purple2),var(--purple));color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;box-shadow:0 0 10px rgba(168,85,247,0.5);letter-spacing:.5px}
-.pct{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:3px;color:var(--purple-light);margin-bottom:5px;text-shadow:0 0 8px rgba(192,132,252,0.4)}
-.pcn{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;margin-bottom:12px}
-.pcr{font-family:'Bebas Neue',sans-serif;font-size:50px;color:var(--green);line-height:1;text-shadow:0 0 15px rgba(0,230,118,0.5)}
-.pcd{display:flex;flex-direction:column;gap:7px}
-.pdr{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
-.pdr:last-child{border-bottom:none}
-.pdk{font-size:12px;color:var(--text3)}
-.pdv{font-size:12px;font-weight:500;color:var(--text2)}
-.pcbtn{
-  width:100%;margin-top:16px;padding:13px;
-  background:rgba(168,85,247,.1);
-  border:1px solid rgba(168,85,247,.35);
-  border-radius:12px;color:var(--purple-light);
-  font-size:14px;font-weight:700;
-  font-family:'Noto Sans KR',sans-serif;cursor:pointer;
-  transition:all .2s;letter-spacing:.3px;
-}
-.pcbtn:hover{background:rgba(168,85,247,.2);box-shadow:0 0 12px rgba(168,85,247,0.2)}
-.pc.ft .pcbtn{background:linear-gradient(135deg,var(--purple2),var(--purple));border:none;color:#fff;box-shadow:0 0 12px rgba(168,85,247,0.4)}
-
-/* CALC */
-.cc{
-  background:rgba(14,12,30,0.7);
-  border:1px solid rgba(139,92,246,0.2);
-  border-radius:18px;padding:22px;margin-bottom:16px;
-  backdrop-filter:blur(10px);
-}
-.cl{font-size:11px;color:var(--text3);margin-bottom:7px;letter-spacing:.5px;text-transform:uppercase}
-.ci{
-  width:100%;background:rgba(255,255,255,0.04);
-  border:1px solid rgba(139,92,246,0.2);
-  border-radius:12px;padding:13px 16px;
-  font-size:22px;color:var(--text);
-  font-family:'Inter',sans-serif;font-weight:700;
-  outline:none;margin-bottom:16px;transition:all .2s;
-}
-.ci:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(168,85,247,0.15)}
-.rsel{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
-.rb{
-  flex:1;min-width:56px;padding:9px 3px;text-align:center;
-  background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:10px;font-size:11px;color:var(--text2);
-  cursor:pointer;transition:all .2s;line-height:1.5;
-}
-.rb.on{background:rgba(0,230,118,.1);border-color:rgba(0,230,118,.4);color:var(--green);font-weight:700;box-shadow:0 0 8px rgba(0,230,118,0.15);text-shadow:0 0 6px rgba(0,230,118,0.4)}
-.csl{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;background:rgba(255,255,255,.08);outline:none;margin-bottom:18px;cursor:pointer}
-.csl::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--green);border:3px solid var(--bg);box-shadow:0 0 10px rgba(0,230,118,.6)}
-.cres{background:rgba(0,0,0,0.2);border-radius:12px;padding:16px;border:1px solid rgba(139,92,246,0.1)}
-.crow{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04)}
-.crow:last-child{border-bottom:none}
-.ck{font-size:13px;color:var(--text2)}
-.cv{font-family:'Inter',sans-serif;font-size:14px;font-weight:700}
-.cv.g{color:var(--green);text-shadow:0 0 8px rgba(0,230,118,0.3)}
-.cv.p{color:var(--purple-light);text-shadow:0 0 8px rgba(192,132,252,0.3)}
-.notice{background:rgba(168,85,247,.05);border:1px solid rgba(168,85,247,.15);border-radius:14px;padding:14px 16px;font-size:12px;color:var(--text2);line-height:1.9}
-
-/* PORTFOLIO */
-.av-card{
-  background:linear-gradient(135deg,rgba(7,26,16,0.85),rgba(9,31,20,0.85));
-  border:1px solid rgba(0,230,118,.25);
-  border-radius:18px;padding:20px;margin-bottom:16px;
-  box-shadow:0 0 20px rgba(0,230,118,0.06);
-}
-.av-lbl{font-size:10px;color:var(--green);letter-spacing:2px;font-weight:700;text-transform:uppercase;margin-bottom:6px;text-shadow:0 0 8px rgba(0,230,118,0.5)}
-.av-amt{font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,5vw,36px);letter-spacing:1px;text-shadow:0 0 10px rgba(0,230,118,0.2)}
-.av-sub{font-size:11px;color:var(--text3);margin-top:4px}
-.inv-card{background:rgba(14,12,30,0.7);border:1px solid rgba(139,92,246,0.2);border-radius:16px;padding:18px;margin-bottom:10px;transition:all .2s}
-.inv-card:hover{border-color:rgba(168,85,247,0.35);box-shadow:0 0 15px rgba(168,85,247,0.06)}
-.inv-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
-.inv-badge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.5px}
-.inv-badge.on{background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.25);text-shadow:0 0 6px rgba(0,230,118,0.4)}
-.inv-badge.off{background:rgba(168,85,247,.1);color:var(--purple-light);border:1px solid rgba(168,85,247,.25)}
-.inv-p{height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;margin-top:10px}
-.inv-pf{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--purple2),var(--purple));box-shadow:1px 0 8px rgba(168,85,247,0.5)}
-.fg2{margin-bottom:14px}
-.fl2{font-size:11px;color:var(--text3);margin-bottom:7px;display:block;text-transform:uppercase;letter-spacing:.5px}
-.fi2,.fs{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(139,92,246,0.2);border-radius:12px;padding:13px 16px;font-size:15px;color:var(--text);font-family:'Noto Sans KR',sans-serif;outline:none;transition:all .2s}
-.fi2:focus,.fs:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(168,85,247,0.15)}
-.fs{-webkit-appearance:none;cursor:pointer}
-.subbtn{width:100%;padding:14px;background:linear-gradient(135deg,#00B85C,#00E676);border:none;border-radius:13px;color:#001A0D;font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-top:6px;box-shadow:var(--neon-green);transition:all .2s}
-.subbtn:hover{box-shadow:0 0 20px rgba(0,230,118,0.7),0 0 40px rgba(0,230,118,0.3)}
-
-/* ADMIN */
-.adcard{background:linear-gradient(135deg,rgba(15,11,30,0.85),rgba(20,15,40,0.85));border:1px solid rgba(139,92,246,.3);border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:0 0 20px rgba(139,92,246,0.06)}
-.adlbl{font-size:10px;color:var(--purple-light);letter-spacing:2px;font-weight:700;text-transform:uppercase;margin-bottom:6px;text-shadow:0 0 8px rgba(192,132,252,0.5)}
-.adtotal{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,4vw,30px);letter-spacing:1px;text-shadow:0 0 10px rgba(168,85,247,0.2)}
-.adstats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-.adstat{background:rgba(14,12,30,0.7);border:1px solid rgba(139,92,246,0.2);border-radius:14px;padding:14px}
-.adslbl{font-size:11px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
-.adsval{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px}
-.adbtns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-.adbtn{padding:13px;border-radius:13px;font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s;letter-spacing:.3px}
-.adbtn.p{background:linear-gradient(135deg,var(--purple2),var(--purple));border:none;color:#fff;box-shadow:0 0 12px rgba(168,85,247,0.3)}
-.adbtn.p:hover{box-shadow:var(--neon-purple)}
-.adbtn.s{background:transparent;border:1px solid rgba(168,85,247,.35);color:var(--purple-light)}
-.icard{background:rgba(14,12,30,0.7);border:1px solid rgba(139,92,246,0.2);border-radius:16px;padding:16px;margin-bottom:10px;transition:all .2s}
-.icard:hover{border-color:rgba(168,85,247,0.35);box-shadow:0 0 15px rgba(168,85,247,0.06)}
-.itop{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.iinfo{display:flex;align-items:center;gap:12px}
-.iav{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--purple2),var(--purple));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0;box-shadow:0 0 10px rgba(168,85,247,0.3)}
-.imetrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.imet{background:rgba(0,0,0,0.2);border-radius:10px;padding:10px}
-.iml{font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.3px}
-.imv{font-family:'Inter',sans-serif;font-size:12px;font-weight:700}
-.distbtn{width:100%;margin-top:12px;padding:11px;background:rgba(0,230,118,.07);border:1px solid rgba(0,230,118,.25);border-radius:10px;color:var(--green);font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s;text-shadow:0 0 6px rgba(0,230,118,0.3)}
-.distbtn:hover{background:rgba(0,230,118,.14);box-shadow:0 0 12px rgba(0,230,118,0.15)}
-.distbtn:disabled{opacity:.4;cursor:default;box-shadow:none}
-
-/* MISC */
-.modal-wrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-.modal-wrap.open{display:flex}
-.modal-box{background:rgba(14,12,30,0.95);border:1px solid rgba(168,85,247,.4);border-radius:24px;padding:36px 28px;text-align:center;max-width:320px;width:90%;box-shadow:var(--neon-border-purple),0 20px 60px rgba(0,0,0,0.5)}
-.modal-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;margin-bottom:10px;text-shadow:0 0 10px rgba(168,85,247,0.3)}
-.modal-sub{font-size:13px;color:var(--text2);line-height:1.8;white-space:pre-line}
-.modal-close{margin-top:22px;padding:12px 36px;background:linear-gradient(135deg,var(--purple2),var(--purple));border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;box-shadow:0 0 12px rgba(168,85,247,0.3)}
-
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(14px);background:rgba(14,12,30,0.95);border:1px solid rgba(168,85,247,.4);border-radius:12px;padding:11px 20px;font-size:13px;color:var(--text);font-weight:500;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;max-width:90%;box-shadow:0 0 15px rgba(168,85,247,0.15)}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-@media(min-width:768px){.toast{bottom:70px}}
-
-.live{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--green);font-weight:700;margin-bottom:14px;text-shadow:0 0 8px rgba(0,230,118,0.4);letter-spacing:.5px;text-transform:uppercase}
-.ldot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(0,230,118,0.8);animation:bl 1.5s ease-in-out infinite}
-@keyframes bl{0%,100%{opacity:1;box-shadow:0 0 8px rgba(0,230,118,0.8)}50%{opacity:.4;box-shadow:0 0 3px rgba(0,230,118,0.4)}}
-
-.div{height:1px;background:linear-gradient(to right,transparent,rgba(168,85,247,0.2),transparent);margin:20px 0}
-.psub{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.8}
-.qadd-btn{
-  flex:1;padding:10px 4px;
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(139,92,246,0.2);
-  border-radius:10px;
-  color:var(--text2);font-size:12px;font-weight:700;
-  font-family:'Noto Sans KR',sans-serif;cursor:pointer;
-  transition:all .2s;white-space:nowrap;
-}
-.qadd-btn:active{background:rgba(168,85,247,0.2);color:var(--purple-light);box-shadow:0 0 8px rgba(168,85,247,0.2)}
-.period-btn{
-  flex:1;padding:12px 4px;
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(139,92,246,0.15);
-  border-radius:11px;
-  color:var(--text3);font-size:13px;font-weight:700;
-  font-family:'Noto Sans KR',sans-serif;cursor:pointer;
-  transition:all .2s;
-}
-.period-btn.on{
-  background:rgba(0,230,118,0.1);
-  border-color:rgba(0,230,118,0.35);
-  color:var(--green);
-  box-shadow:0 0 10px rgba(0,230,118,0.15);
-}
-.plan-rate-btn{
-  flex:1;min-width:54px;padding:9px 3px;text-align:center;
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:10px;font-size:11px;font-weight:700;
-  color:var(--text3);cursor:pointer;transition:all .2s;
-  font-family:'Noto Sans KR',sans-serif;line-height:1.6;
-}
-.plan-rate-btn span{font-size:9px;font-weight:400;color:var(--text3)}
-.plan-rate-btn.on{
-  background:rgba(168,85,247,0.15);
-  border-color:rgba(168,85,247,0.45);
-  color:var(--purple-light);
-  box-shadow:0 0 8px rgba(168,85,247,0.2);
-}
-.plan-rate-btn.on span{color:var(--purple-light)}
-.row-kv{display:flex;justify-content:space-between;margin-bottom:7px}
-.kv-k{font-size:12px;color:var(--text3)}
-.kv-v{font-size:12px;font-weight:500;color:var(--text)}
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpiderBOT — AI 자동 투자 수익 분배 플랫폼</title>
+<meta name="description" content="SpiderBOT은 AI 봇이 24시간 자동으로 거래하고, 매일 수익을 정산해 드리는 국내 자동 투자 수익 분배 플랫폼입니다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="templatemo-623-novapay-style.css">
 </head>
 <body>
 
-<!-- SPIDER WEB CANVAS -->
-<canvas id="web-canvas"></canvas>
-
-<!-- AUTH -->
-<div id="auth-wrap">
-  <div class="auth-content">
-    <div class="vbanner" id="vbanner">
-      <div class="vbanner-title">이메일 인증 완료</div>
-      <div class="vbanner-sub" id="vsub">로그인하여 SpiderBOT을 이용하세요</div>
-    </div>
-    <div class="auth-logo">
-      <div class="auth-logo-name">SpiderBOT</div>
-      <div class="auth-logo-sub">AI Trading Bot Platform</div>
-    </div>
-    <div class="auth-card">
-      <div class="tab-row">
-        <div class="tab on" id="tl" onclick="atab('login')">로그인</div>
-        <div class="tab" id="tr" onclick="atab('reg')">회원가입</div>
-      </div>
-      <div class="aerr" id="aerr"></div>
-      <div class="aok"  id="aok"></div>
-
-      <!-- LOGIN -->
-      <div id="fl">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:5px;text-shadow:0 0 10px rgba(168,85,247,0.3)">다시 오셨군요</div>
-        <div style="font-size:13px;color:var(--text3);margin-bottom:20px">아이디와 비밀번호로 로그인하세요</div>
-        <div class="fg"><label class="fl">아이디</label><input class="fi" type="text" id="lu" placeholder="아이디 입력" autocapitalize="none" autocomplete="username"></div>
-        <div class="fg"><label class="fl">비밀번호</label>
-          <div class="pw-wrap"><input class="fi" type="password" id="lp" placeholder="비밀번호 입력" autocomplete="current-password" style="padding-right:44px"><button class="pw-eye" onclick="tp('lp',this)">보기</button></div>
-        </div>
-        <button class="abtn" id="lbtn" onclick="doLogin()">로그인</button>
-        <button class="lbtn" onclick="atab('reg')">계정이 없으신가요? 회원가입</button>
-      </div>
-
-      <!-- REGISTER -->
-      <div id="freg" style="display:none">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:5px;text-shadow:0 0 10px rgba(168,85,247,0.3)">계정 만들기</div>
-        <div style="font-size:13px;color:var(--text3);margin-bottom:20px">간단하게 가입하고 투자를 시작하세요</div>
-        <div class="fg"><label class="fl">아이디</label><input class="fi" type="text" id="ru" placeholder="영문, 숫자, 밑줄 / 3~20자" autocapitalize="none" oninput="cr()"></div>
-        <div class="fg"><label class="fl">이메일</label><input class="fi" type="email" id="re" placeholder="example@email.com" autocapitalize="none"></div>
-        <div class="fg"><label class="fl">비밀번호</label>
-          <div class="pw-wrap"><input class="fi" type="password" id="rp" placeholder="특수문자 포함 8자 이상" autocomplete="new-password" style="padding-right:44px" oninput="cr()"><button class="pw-eye" onclick="tp('rp',this)">보기</button></div>
-        </div>
-        <div class="pw-rules">
-          <div class="pw-rules-title">조건 확인</div>
-          <div class="rule no" id="r1">비밀번호 8자 이상</div>
-          <div class="rule no" id="r2">특수문자 포함 (!@#$ 등)</div>
-          <div class="rule no" id="r3">아이디 3~20자</div>
-          <div class="rule no" id="r4">아이디 영문, 숫자, 밑줄만</div>
-        </div>
-        <button class="abtn" id="rbtn" onclick="doReg()">회원가입 &amp; 인증 메일 발송</button>
-        <button class="lbtn" onclick="atab('login')">이미 계정이 있으신가요? 로그인</button>
-      </div>
-
-      <!-- RESEND -->
-      <div id="frs" style="display:none">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:5px">인증 메일 재발송</div>
-        <div style="font-size:13px;color:var(--text3);margin-bottom:20px">가입 이메일을 입력하면 다시 발송합니다</div>
-        <div class="fg"><label class="fl">이메일</label><input class="fi" type="email" id="rse" placeholder="가입 이메일 입력"></div>
-        <button class="abtn" id="rsbtn" onclick="doResend()">인증 메일 재발송</button>
-        <button class="lbtn" onclick="atab('login')">로그인으로 돌아가기</button>
-      </div>
-    </div>
-    <div id="rslink" style="margin-top:14px;text-align:center">
-      <button class="lbtn" onclick="atab('resend')" style="display:inline">인증 메일을 받지 못하셨나요?</button>
-    </div>
-  </div>
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track" id="tickerTrack"></div>
 </div>
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <div class="t-brand">SpiderBOT</div>
-  <div class="t-right">
-    <div class="tic" onclick="showToast('언어 설정')">KOR</div>
-    <div class="tic" onclick="showToast('텔레그램 채널')">TG</div>
-    <span id="t-user"></span>
-    <button id="logout-btn" onclick="doLogout()">로그아웃</button>
-  </div>
-</div>
-
-<div class="app-wrap">
-
-<!-- HOME -->
-<div class="page on" id="page-home">
-  <div class="plan-row">
-    <div>
-      <div class="plan-lbl">현재 플랜</div>
-      <div class="plan-name-text"><span id="cur-plan">플랜 없음</span><div class="ic">i</div></div>
+<!-- NAV -->
+<nav id="mainNav">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 16 16"><polyline points="2,12 6,7 10,9 14,4"/><circle cx="14" cy="4" r="1.5" fill="white" stroke="none"/></svg>
     </div>
-    <button class="bot-btn" onclick="showToast('봇 작동 방식 안내')">봇 작동 방식 <div class="ic" style="background:rgba(255,255,255,.12);color:#fff">i</div></button>
+    SpiderBOT
+  </a>
+  <div class="nav-links">
+    <a href="#features">주요 기능</a>
+    <a href="#dashboard">대시보드</a>
+    <a href="#pricing">투자 플랜</a>
+    <a href="#security">보안</a>
+    <a href="#faq">FAQ</a>
   </div>
-
-  <div class="bal-card">
-    <div class="bal-grid">
-      <div class="bal-l">
-        <div class="bal-lbl">잔액</div>
-        <div class="bal-val" id="hbal">0 원</div>
-      </div>
-      <div class="bal-r">
-        <div class="bal-lbl">수익 (24시간) <span style="color:var(--purple-light);cursor:pointer;font-size:14px" onclick="showToast('갱신 중...')">↺</span></div>
-        <div class="bal-val" style="color:var(--green);text-shadow:0 0 10px rgba(0,230,118,0.3)" id="hpft">0 원</div>
-      </div>
-      <div class="bal-div"></div>
-      <div class="bal-bot">
-        <div>
-          <div style="font-size:11px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">청구할 금액</div>
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px">0 원</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <button class="claim-btn" onclick="showModal('수익 청구','출금 신청이 접수되었습니다.\n영업일 1~2일 내 처리됩니다.')">청구</button>
-          <div class="ic">i</div>
-        </div>
-      </div>
-    </div>
+  <div class="nav-cta">
+    <a href="#" class="btn-ghost">로그인</a>
+    <a href="#" class="btn-primary">무료 시작</a>
   </div>
-
-  <div class="sec-title">AI 기반 자동 거래</div>
-  <div class="bot-st on" id="botst" onclick="toggleBot()"><span id="bottxt">봇 활성 — 실시간 운용 중</span></div>
-  <div class="act-row">
-    <button class="act-btn on" id="bdep" onclick="sact('dep')">입금</button>
-    <button class="act-btn off" id="bwd"  onclick="sact('wd')">출금</button>
-    <div class="ic" style="width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(139,92,246,.15)">i</div>
-  </div>
-  <div class="pill-wrap">
-    <div class="pill" onclick="goPage('plans',document.getElementById('ni-plans'))">수익 플랜 <div class="ic" style="background:rgba(168,85,247,.15)">i</div></div>
-  </div>
-  <div class="up-card" onclick="goPage('plans',document.getElementById('ni-plans'))">
-    <div class="up-ico">G</div>
-    <div style="flex:1">
-      <div style="font-size:13px;color:var(--text2);margin-bottom:4px">업그레이드 <span style="color:var(--purple-light);font-weight:700;text-shadow:0 0 8px rgba(192,132,252,0.4)">Gold 플랜</span></div>
-      <div style="font-size:12px;color:var(--green);font-weight:600;text-shadow:0 0 6px rgba(0,230,118,0.4)">+6% 일일 / 60,000원 하루</div>
-    </div>
-    <div style="color:var(--text3);font-size:20px">›</div>
-  </div>
-  <div style="margin-bottom:18px">
-    <div class="prog-hdr"><span style="font-weight:600">Gold 플랜까지 <span style="color:var(--green);text-shadow:0 0 8px rgba(0,230,118,0.4)">25%</span></span><span style="color:var(--text3)">100%</span></div>
-    <div class="prog-bar"><div class="prog-fill" id="progf" style="width:0%"></div><div class="prog-lbls"><span>500,000원</span><span>1,000,000원</span></div></div>
-    <div class="prog-hint">Gold 플랜이 더 높은 일일 수익을 해제합니다</div>
-  </div>
-  <div class="sec-title">최근 봇 거래</div>
-  <div id="trades"></div>
-</div>
-
-<!-- PLANS -->
-<div class="page" id="page-plans">
-  <p class="psub">모든 플랜은 일 수익률을 보장하며 수동 수익분배 방식으로 운영됩니다.</p>
-  <div class="pc" onclick="selPlan('Starter','2%','10,000원','100,000원')"><div class="pct">01 · STARTER</div><div class="pcn">스타터 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr">2%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">10,000원 ~ 100,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">200원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">1,400원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">6,000원</span></div></div><button class="pcbtn">스타터 신청</button></div>
-  <div class="pc" onclick="selPlan('Bronze','2.5%','100,000원','500,000원')"><div class="pct">02 · BRONZE</div><div class="pcn">브론즈 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr">2.5%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">100,000원 ~ 500,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">2,500원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">17,500원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">75,000원</span></div></div><button class="pcbtn">브론즈 신청</button></div>
-  <div class="pc" onclick="selPlan('Silver','4%','500,000원','1,000,000원')"><div class="pct">03 · SILVER</div><div class="pcn">실버 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr">4%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">500,000원 ~ 1,000,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">20,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">140,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">600,000원</span></div></div><button class="pcbtn">실버 신청</button></div>
-  <div class="pc ft" onclick="selPlan('Gold','6%','1,000,000원','5,000,000원')"><div class="pct">04 · GOLD</div><div class="pcn">골드 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr">6%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">1,000,000원 ~ 5,000,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">60,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">420,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">1,800,000원</span></div></div><button class="pcbtn">골드 신청</button></div>
-  <div class="pc" style="border-color:rgba(200,180,255,.3);background:rgba(27,21,53,0.75)" onclick="selPlan('Platinum','8%','5,000,000원','10,000,000원')"><div class="pct" style="color:#C8B4FF">05 · PLATINUM</div><div class="pcn">플래티넘 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr" style="color:#C8B4FF;text-shadow:0 0 15px rgba(200,180,255,0.5)">8%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">5,000,000원 ~ 10,000,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">400,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">2,800,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">12,000,000원</span></div></div><button class="pcbtn" style="border-color:rgba(200,180,255,.3);color:#C8B4FF">플래티넘 신청</button></div>
-  <div class="pc" style="border-color:rgba(100,220,255,.3);background:rgba(13,30,42,0.75)" onclick="selPlan('Diamond','9.5%','10,000,000원','25,000,000원')"><div class="pct" style="color:#64DCFF">06 · DIAMOND</div><div class="pcn">다이아몬드 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr" style="color:#64DCFF;text-shadow:0 0 15px rgba(100,220,255,0.5)">9.5%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">10,000,000원 ~ 25,000,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">950,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">6,650,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">28,500,000원</span></div></div><button class="pcbtn" style="border-color:rgba(100,220,255,.3);color:#64DCFF">다이아몬드 신청</button></div>
-  <div class="pc" style="border-color:rgba(255,200,80,.3);background:rgba(30,22,8,0.75)" onclick="selPlan('Royal','11%','25,000,000원','75,000,000원')"><div class="pct" style="color:#FFC850">07 · ROYAL</div><div class="pcn">로열 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr" style="color:#FFC850;text-shadow:0 0 15px rgba(255,200,80,0.5)">11%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">25,000,000원 ~ 75,000,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">2,750,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">19,250,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">82,500,000원</span></div></div><button class="pcbtn" style="border-color:rgba(255,200,80,.3);color:#FFC850">로열 신청</button></div>
-  <div class="pc" style="border-color:rgba(255,120,60,.3);background:rgba(30,16,8,0.75)" onclick="selPlan('Imperial','12.5%','75,000,000원','100,000,000원')"><div class="pct" style="color:#FF7840">08 · IMPERIAL</div><div class="pcn">임페리얼 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr" style="color:#FF7840;text-shadow:0 0 15px rgba(255,120,60,0.5)">12.5%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">75,000,000원 ~ 100,000,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">9,375,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">65,625,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">281,250,000원</span></div></div><button class="pcbtn" style="border-color:rgba(255,120,60,.3);color:#FF7840">임페리얼 신청</button></div>
-  <div class="pc" style="border-color:rgba(255,80,100,.3);background:rgba(30,8,16,0.75)" onclick="selPlan('Dynasty','14%','100,000,000원','150,000,000원')"><div class="pct" style="color:#FF5064">09 · DYNASTY</div><div class="pcn">다이너스티 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr" style="color:#FF5064;text-shadow:0 0 15px rgba(255,80,100,0.5)">14%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">100,000,000원 ~ 150,000,000원</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">14,000,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">98,000,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">420,000,000원</span></div></div><button class="pcbtn" style="border-color:rgba(255,80,100,.3);color:#FF5064">다이너스티 신청</button></div>
-  <div class="pc" style="border-color:rgba(0,230,118,.35);background:rgba(7,26,16,0.75)" onclick="selPlan('Legacy','15%','150,000,000원~','무한')"><div class="pct" style="color:var(--green)">10 · LEGACY</div><div class="pcn">레거시 플랜</div><div style="display:flex;align-items:baseline;gap:6px;margin-bottom:13px"><div class="pcr">15%</div><div style="font-size:13px;color:var(--text2)">/ 일 ROI</div></div><div class="pcd"><div class="pdr"><span class="pdk">잔액 범위</span><span class="pdv">150,000,000원 ~ 무한</span></div><div class="pdr"><span class="pdk">일일 수익</span><span class="pdv" style="color:var(--green)">22,500,000원</span></div><div class="pdr"><span class="pdk">주간 수익</span><span class="pdv" style="color:var(--green)">157,500,000원</span></div><div class="pdr"><span class="pdk">월간 수익</span><span class="pdv" style="color:var(--green)">675,000,000원</span></div></div><button class="pcbtn">레거시 VIP 신청</button></div>
-</div>
-
-<!-- CALCULATOR -->
-<div class="page" id="page-calc">
-
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;text-shadow:0 0 10px rgba(168,85,247,0.3)">수익 계산기</div>
-    <div class="ic">i</div>
-  </div>
-
-  <!-- 투자 금액 -->
-  <div style="margin-bottom:22px">
-    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">투자 금액</div>
-
-    <!-- 직접 입력 -->
-    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(139,92,246,0.25);border-radius:14px;padding:4px 6px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
-      <input id="c-amt-input" type="number" inputmode="numeric" min="0" max="1000000000000000"
-        placeholder="직접 입력 (원)"
-        oninput="onAmtInput(this.value)"
-        onkeydown="return blockOverMax(event, this, 1000000000000000)"
-        style="flex:1;background:none;border:none;outline:none;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--text);padding:10px 12px;min-width:0">
-      <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--text3);padding-right:6px">원</span>
-      <button onclick="resetAmt()" style="background:rgba(255,255,255,0.06);border:none;border-radius:9px;color:var(--text3);font-size:12px;padding:8px 12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;flex-shrink:0;white-space:nowrap">초기화</button>
-    </div>
-
-    <!-- 금액 표시 -->
-    <div id="c-amt-disp" style="font-size:13px;color:var(--purple-light);font-weight:700;padding:0 4px;margin-bottom:10px;min-height:20px;text-shadow:0 0 8px rgba(192,132,252,0.3)"></div>
-
-    <!-- 빠른 추가 버튼 -->
-    <div style="display:flex;gap:7px;flex-wrap:wrap">
-      <button class="qadd-btn" onclick="addAmt(10000)">+1만</button>
-      <button class="qadd-btn" onclick="addAmt(50000)">+5만</button>
-      <button class="qadd-btn" onclick="addAmt(100000)">+10만</button>
-      <button class="qadd-btn" onclick="addAmt(1000000)">+100만</button>
-      <button class="qadd-btn" onclick="addAmt(10000000)">+1000만</button>
-    </div>
-  </div>
-
-  <!-- 기간 -->
-  <div style="margin-bottom:22px">
-    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">기간</div>
-
-    <!-- 직접 입력 -->
-    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(139,92,246,0.25);border-radius:14px;padding:4px 6px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
-      <input id="c-days-input" type="number" inputmode="numeric" min="1" max="3650"
-        placeholder="직접 입력"
-        oninput="onDaysInput(this.value)"
-        onkeydown="return blockOverMax(event, this, 3650)"
-        style="flex:1;background:none;border:none;outline:none;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--text);padding:10px 12px;min-width:0">
-      <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--text3);padding-right:12px">일</span>
-    </div>
-
-    <!-- 빠른 기간 버튼 -->
-    <div style="display:flex;gap:8px">
-      <button class="period-btn" onclick="setPeriod(this,1)">1 일</button>
-      <button class="period-btn on" onclick="setPeriod(this,7)">7 일</button>
-      <button class="period-btn" onclick="setPeriod(this,30)">30 일</button>
-      <button class="period-btn" onclick="setPeriod(this,90)">90 일</button>
-    </div>
-  </div>
-
-  <!-- 결과 카드 -->
-  <div style="background:linear-gradient(135deg,rgba(5,30,18,0.95),rgba(8,40,22,0.95));border:1px solid rgba(0,230,118,0.25);border-radius:20px;padding:22px;margin-bottom:16px;box-shadow:0 0 30px rgba(0,230,118,0.06)">
-
-    <!-- 헤더 (현재 플랜 + ROI) -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:42px;height:42px;border-radius:12px;background:rgba(0,230,118,0.15);border:1px solid rgba(0,230,118,0.3);display:flex;align-items:center;justify-content:center">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-        </div>
-        <div>
-          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">예상 결과</div>
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--text)">수익 계산</div>
-        </div>
-      </div>
-      <!-- 현재 플랜 뱃지 -->
-      <div style="text-align:right">
-        <div id="c-plan-name" style="font-size:11px;font-weight:700;color:var(--purple-light);text-shadow:0 0 6px rgba(192,132,252,0.4);letter-spacing:.5px">금액을 입력하세요</div>
-        <div id="c-plan-roi" style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);text-shadow:0 0 10px rgba(0,230,118,0.4);letter-spacing:1px">- %</div>
-      </div>
-    </div>
-
-    <!-- 총 순이익 -->
-    <div style="background:rgba(0,0,0,0.25);border-radius:14px;padding:18px;margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">총 순이익</span>
-        <span id="c-pct" style="font-size:12px;font-weight:700;color:var(--green);text-shadow:0 0 8px rgba(0,230,118,0.4)">+0.0%</span>
-      </div>
-      <div id="c-total" style="font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:1px;color:var(--green);text-shadow:0 0 20px rgba(0,230,118,0.4),0 0 40px rgba(0,230,118,0.2);line-height:1">₩0</div>
-    </div>
-
-    <!-- 일일 수익 / 일일 ROI -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div style="background:rgba(0,0,0,0.2);border-radius:12px;padding:14px">
-        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">일일 수익</div>
-        <div id="c-daily" style="font-family:'Inter',sans-serif;font-size:18px;font-weight:800;color:var(--green);text-shadow:0 0 10px rgba(0,230,118,0.3)">₩0</div>
-      </div>
-      <div style="background:rgba(0,0,0,0.2);border-radius:12px;padding:14px">
-        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">일일 ROI</div>
-        <div id="c-roi" style="font-family:'Inter',sans-serif;font-size:18px;font-weight:800;color:var(--green);text-shadow:0 0 10px rgba(0,230,118,0.3)">- %</div>
-      </div>
-    </div>
-
-    <!-- 최종 금액 -->
-    <div style="background:rgba(0,0,0,0.2);border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:13px;color:var(--text2)">최종 금액 (원금 + 수익)</span>
-      <span id="c-final" style="font-family:'Inter',sans-serif;font-size:16px;font-weight:800;color:var(--text)">₩0</span>
-    </div>
-  </div>
-
-  <!-- CTA 버튼 -->
-  <button onclick="goPage('plans',document.getElementById('ni-plans'))"
-    style="width:100%;padding:17px;background:linear-gradient(135deg,#00B85C,#00E676);border:none;border-radius:14px;color:#001A0D;font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;box-shadow:0 0 20px rgba(0,230,118,0.35);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.3px;margin-bottom:12px">
-    <span id="cta-txt">계속하려면 금액을 입력하세요</span>
-    <span style="font-size:18px">→</span>
+  <button class="hamburger" id="hamburger" aria-label="메뉴 열기" aria-expanded="false">
+    <span></span><span></span><span></span>
   </button>
+</nav>
 
-  <div style="text-align:center;font-size:11px;color:var(--text3);letter-spacing:.3px">금액에 맞는 플랜 ROI 기반 예상 결과 · 최대 3,650일</div>
-</div>
-
-
-<!-- PORTFOLIO -->
-<!-- ICO (준비 중) -->
-<div class="page" id="page-ico">
-  <div style="text-align:center;padding:60px 20px">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;color:var(--purple-light);text-shadow:var(--neon-purple);margin-bottom:16px">ICO</div>
-    <div style="font-size:15px;color:var(--text2);line-height:1.8;margin-bottom:12px">ICO 서비스 준비 중입니다.</div>
-    <div style="font-size:13px;color:var(--text3)">오픈 일정은 추후 공지됩니다.</div>
-    <div style="margin-top:32px;height:1px;background:linear-gradient(to right,transparent,rgba(168,85,247,0.3),transparent)"></div>
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#features">주요 기능</a>
+  <a href="#dashboard">대시보드</a>
+  <a href="#pricing">투자 플랜</a>
+  <a href="#security">보안</a>
+  <a href="#faq">FAQ</a>
+  <div class="m-btns">
+    <a href="#" class="btn-ghost">로그인</a>
+    <a href="#" class="btn-primary">무료로 시작하기</a>
   </div>
 </div>
 
-<!-- REFERRAL (준비 중) -->
-<div class="page" id="page-ref">
-  <div style="text-align:center;padding:60px 20px">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;color:var(--green);text-shadow:var(--neon-green);margin-bottom:16px">REFERRAL</div>
-    <div style="font-size:15px;color:var(--text2);line-height:1.8;margin-bottom:12px">추천인 시스템 준비 중입니다.</div>
-    <div style="font-size:13px;color:var(--text3)">추천 보너스 정책은 추후 공지됩니다.</div>
-    <div style="margin-top:32px;height:1px;background:linear-gradient(to right,transparent,rgba(0,230,118,0.3),transparent)"></div>
-  </div>
-</div>
-
-<!-- PROFILE -->
-<div class="page" id="page-profile">
-
-  <!-- 프로필 헤더 -->
-  <div style="text-align:center;padding:28px 0 24px">
-    <div id="pf-avatar" style="width:80px;height:80px;border-radius:24px;background:linear-gradient(135deg,var(--purple2),var(--purple));display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:34px;color:#fff;margin:0 auto 14px;box-shadow:0 0 24px rgba(168,85,247,0.5),0 0 48px rgba(168,85,247,0.2)">?</div>
-    <div id="pf-username" style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;text-shadow:0 0 12px rgba(168,85,247,0.4)">-</div>
-    <div id="pf-plan" style="display:inline-block;margin-top:7px;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.3);color:var(--purple-light);letter-spacing:1px;text-shadow:0 0 8px rgba(192,132,252,0.4)">플랜 없음</div>
-  </div>
-
-  <!-- 사용자 정보 -->
-  <div class="sec-title">계정 정보</div>
-  <div style="background:rgba(14,12,30,0.7);border:1px solid rgba(139,92,246,0.2);border-radius:18px;padding:6px 0;margin-bottom:16px">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.05)">
-      <span style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">사용자 ID</span>
-      <span id="pf-uid" style="font-family:'Inter',sans-serif;font-size:14px;font-weight:700;color:var(--purple-light);text-shadow:0 0 8px rgba(192,132,252,0.3)">-</span>
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-content silk-reveal-left">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      AI 기반 자동 수익 분배 플랫폼
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.05)">
-      <span style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">아이디</span>
-      <span id="pf-id" style="font-size:14px;font-weight:500">-</span>
+    <h1>투자 수익을<br>매일<br><span>자동으로 받으세요</span></h1>
+    <p class="hero-sub">SpiderBOT은 AI 봇이 24시간 쉬지 않고 자동으로 거래하고, 매일 수익을 정산해 드리는 투자 수익 자동화 플랫폼입니다. 복잡한 설정 없이 원하는 플랜만 선택하면 됩니다.</p>
+    <div class="hero-btns">
+      <a href="#" class="btn-hero">
+        지금 시작하기
+        <svg viewBox="0 0 16 16"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="9,4 13,8 9,12"/></svg>
+      </a>
+      <a href="#dashboard" class="btn-outline">플랫폼 둘러보기</a>
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.05)">
-      <span style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">이메일</span>
-      <span id="pf-email" style="font-size:13px;font-weight:500;color:var(--text2)">-</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px">
-      <span style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">가입일</span>
-      <span id="pf-date" style="font-size:14px;font-weight:500">-</span>
+    <div class="hero-trust">
+      <div class="hero-avatars">
+        <span>KM</span><span>LJ</span><span>PH</span><span>+</span>
+      </div>
+      <p class="hero-trust-text"><strong>1,284명+</strong> 투자자가 SpiderBOT을 신뢰합니다</p>
     </div>
   </div>
-
-  <!-- 수익 현황 -->
-  <div class="sec-title">수익 현황</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
-    <div style="background:rgba(7,26,16,0.7);border:1px solid rgba(0,230,118,0.2);border-radius:16px;padding:18px;box-shadow:0 0 15px rgba(0,230,118,0.04)">
-      <div style="font-size:10px;color:var(--green);letter-spacing:1.5px;font-weight:700;text-transform:uppercase;margin-bottom:8px;text-shadow:0 0 6px rgba(0,230,118,0.4)">총 수익</div>
-      <div id="pf-profit" style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--text);text-shadow:0 0 8px rgba(0,230,118,0.15)">0 원</div>
-    </div>
-    <div style="background:rgba(14,12,30,0.7);border:1px solid rgba(139,92,246,0.2);border-radius:16px;padding:18px">
-      <div style="font-size:10px;color:var(--purple-light);letter-spacing:1.5px;font-weight:700;text-transform:uppercase;margin-bottom:8px;text-shadow:0 0 6px rgba(192,132,252,0.4)">현재 잔액</div>
-      <div id="pf-balance" style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px">0 원</div>
-    </div>
-  </div>
-
-  <!-- 거래 내역 -->
-  <div class="sec-title">입출금 거래내역</div>
-  <div style="background:rgba(14,12,30,0.5);border:1px solid rgba(139,92,246,0.15);border-radius:16px;padding:18px;margin-bottom:14px">
-    <div style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.7">모든 입출금 거래는 <span style="color:var(--green);text-shadow:0 0 6px rgba(0,230,118,0.4)">암호화폐</span>로만 이루어집니다.</div>
-    <div id="pf-txlist"></div>
-  </div>
-
-  <!-- 버튼 -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-    <button style="padding:13px;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.25);border-radius:13px;color:var(--green);font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;text-shadow:0 0 6px rgba(0,230,118,0.3);transition:all .2s" onclick="showToast('입금 기능 준비 중')">입금 신청</button>
-    <button style="padding:13px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.25);border-radius:13px;color:var(--purple-light);font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;text-shadow:0 0 6px rgba(192,132,252,0.3);transition:all .2s" onclick="showToast('출금 기능 준비 중')">출금 신청</button>
-  </div>
-
-  <button onclick="doLogout()" style="width:100%;padding:13px;background:transparent;border:1px solid rgba(255,59,92,0.25);border-radius:13px;color:rgba(255,100,120,0.7);font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s">로그아웃</button>
-</div>
-
-<!-- ADMIN -->
-<div class="page" id="page-admin">
-  <div style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.25);border-radius:13px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--purple-light);font-weight:600;letter-spacing:.5px;text-shadow:0 0 8px rgba(192,132,252,0.3)">관리자 전용 패널 — 수동 분배 시스템</div>
-  <div class="adcard"><div class="adlbl">오늘 총 분배 예정액</div><div class="adtotal">12,847,500 원</div><div style="font-size:12px;color:var(--text3);margin-top:4px">활성 투자자 1,284명 · 2025.07.13</div></div>
-  <div class="adstats">
-    <div class="adstat"><div class="adslbl">미분배 대기</div><div class="adsval" style="color:var(--red);text-shadow:0 0 8px rgba(255,59,92,0.4)">23명</div><div style="font-size:11px;color:var(--text3);margin-top:3px">처리 필요</div></div>
-    <div class="adstat"><div class="adslbl">오늘 완료</div><div class="adsval" style="color:var(--green);text-shadow:0 0 8px rgba(0,230,118,0.4)">1,261명</div><div style="font-size:11px;color:var(--text3);margin-top:3px">분배 완료</div></div>
-  </div>
-  <div class="adbtns">
-    <button class="adbtn p" onclick="batchDist()">전체 일괄 분배</button>
-    <button class="adbtn s" onclick="showToast('리포트 내보냄')">리포트 내보내기</button>
-  </div>
-  <div class="sec-title">투자자 목록</div>
-  <div id="invlist"></div>
-</div>
-
-
-<!-- ICO PAGE -->
-<div class="page" id="page-ico">
-  <div style="text-align:center;padding:60px 20px">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;background:linear-gradient(135deg,var(--purple-light),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 15px rgba(168,85,247,0.4));margin-bottom:16px">ICO</div>
-    <div style="font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:32px">SpiderBOT ICO 페이지입니다.<br>준비 중입니다. 곧 공개됩니다.</div>
-    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:16px;padding:24px;max-width:360px;margin:0 auto">
-      <div style="font-size:12px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">오픈 예정</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:var(--purple-light);text-shadow:0 0 15px rgba(192,132,252,0.4)">Coming Soon</div>
-    </div>
-  </div>
-</div>
-
-<!-- REFERRAL PAGE -->
-<div class="page" id="page-ref">
-  <div class="sec-title">레퍼럴 시스템</div>
-  <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:16px;padding:20px;margin-bottom:16px;text-align:center">
-    <div style="font-size:12px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">준비 중</div>
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--purple-light);text-shadow:0 0 15px rgba(192,132,252,0.4);margin-bottom:10px">Coming Soon</div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.8">추천인 시스템이 곧 오픈됩니다.<br>친구를 초대하고 수익을 나눠가지세요.</div>
-  </div>
-  <div class="neon-card" style="padding:20px;margin-bottom:12px">
-    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">예정 혜택</div>
-    <div class="row-kv" style="margin-bottom:10px"><span class="kv-k">직접 추천 보상</span><span style="font-size:13px;font-weight:700;color:var(--green)">준비 중</span></div>
-    <div class="row-kv" style="margin-bottom:10px"><span class="kv-k">간접 추천 보상</span><span style="font-size:13px;font-weight:700;color:var(--green)">준비 중</span></div>
-    <div class="row-kv"><span class="kv-k">추천인 코드</span><span style="font-size:13px;font-weight:700;color:var(--purple-light)">오픈 예정</span></div>
-  </div>
-</div>
-
-<!-- PROFILE PAGE -->
-<div class="page" id="page-profile">
-  <div class="sec-title">내 프로필</div>
-
-  <!-- User Info Card -->
-  <div class="bal-card" style="margin-bottom:16px">
-    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
-      <div id="prof-avatar" style="width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,var(--purple2),var(--purple));display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;color:#fff;flex-shrink:0;box-shadow:0 0 16px rgba(168,85,247,0.4)">?</div>
-      <div>
-        <div id="prof-username" style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;text-shadow:0 0 10px rgba(168,85,247,0.3)">-</div>
-        <div id="prof-plan" style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(168,85,247,0.12);color:var(--purple-light);border:1px solid rgba(168,85,247,0.25);display:inline-block;margin-top:4px">플랜 없음</div>
+  <div class="hero-visual silk-reveal-right">
+    <div class="float-badge fb-left">
+      <div class="float-badge-icon" style="background:rgba(61,204,142,.12)">
+        <svg width="18" height="18" fill="none" stroke="#3DCC8E" stroke-width="2" stroke-linecap="round" viewBox="0 0 18 18"><polyline points="2,12 7,7 11,10 16,4"/></svg>
+      </div>
+      <div class="float-badge-info">
+        <div class="val">+892,500원</div>
+        <div class="lbl">오늘 수익</div>
       </div>
     </div>
-    <div class="row-kv" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-      <span class="kv-k">사용자 ID</span>
-      <span id="prof-uid" style="font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:var(--purple-light);text-shadow:0 0 6px rgba(192,132,252,0.3);letter-spacing:1px">-</span>
+    <div class="float-badge fb-right">
+      <div class="float-badge-icon" style="background:rgba(74,158,232,.12)">
+        <svg width="18" height="18" fill="none" stroke="#4A9EE8" stroke-width="2" stroke-linecap="round" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7"/><polyline points="9,5 9,9 12,11"/></svg>
+      </div>
+      <div class="float-badge-info">
+        <div class="val">매일 10시</div>
+        <div class="lbl">자동 정산</div>
+      </div>
     </div>
-    <div class="row-kv" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-      <span class="kv-k">이메일</span>
-      <span id="prof-email" style="font-size:13px;font-weight:500;color:var(--text2)">-</span>
-    </div>
-    <div class="row-kv" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-      <span class="kv-k">가입일</span>
-      <span id="prof-date" style="font-size:13px;font-weight:500;color:var(--text2)">-</span>
-    </div>
-    <div class="row-kv" style="padding:10px 0">
-      <span class="kv-k">총 수익</span>
-      <span id="prof-profit" style="font-family:'Inter',sans-serif;font-size:14px;font-weight:700;color:var(--green);text-shadow:0 0 8px rgba(0,230,118,0.3)">0 원</span>
-    </div>
-  </div>
-
-  <!-- Crypto Transaction History -->
-  <div class="sec-title">암호화폐 거래 내역</div>
-  <div style="background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.15);border-radius:14px;padding:14px 16px;margin-bottom:14px">
-    <div style="font-size:12px;color:var(--text3);line-height:1.7">모든 입출금은 암호화폐(USDT, BTC, ETH)로만 처리됩니다.<br>거래 확인까지 네트워크에 따라 시간이 소요될 수 있습니다.</div>
-  </div>
-
-  <!-- Filter tabs -->
-  <div style="display:flex;gap:8px;margin-bottom:16px">
-    <button onclick="filterTx('all',this)" class="tx-filter on" style="flex:1;padding:9px;background:linear-gradient(135deg,var(--purple2),var(--purple));border:none;border-radius:10px;color:#fff;font-size:12px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;box-shadow:0 0 10px rgba(168,85,247,0.3)">전체</button>
-    <button onclick="filterTx('deposit',this)" class="tx-filter" style="flex:1;padding:9px;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.2);border-radius:10px;color:var(--green);font-size:12px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer">입금</button>
-    <button onclick="filterTx('withdraw',this)" class="tx-filter" style="flex:1;padding:9px;background:rgba(255,59,92,0.08);border:1px solid rgba(255,59,92,0.2);border-radius:10px;color:var(--red);font-size:12px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer">출금</button>
-  </div>
-
-  <div id="tx-list"></div>
-
-  <!-- Logout button -->
-  <div style="margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06)">
-    <button onclick="doLogout()" style="width:100%;padding:13px;background:transparent;border:1px solid rgba(255,59,92,0.3);border-radius:13px;color:rgba(255,100,120,0.8);font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s">로그아웃</button>
-  </div>
-</div>
-
-</div><!-- /app-wrap -->
-
-<!-- BOTTOM NAV -->
-<nav class="bnav">
-  <div class="ni" id="ni-ico" onclick="goPage('ico',this)">
-    <div class="ni-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
-    <div class="ni-lbl">ICO</div>
-  </div>
-  <div class="ni" id="ni-ref" onclick="goPage('ref',this)">
-    <div class="ni-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
-    <div class="ni-lbl">레퍼럴</div>
-  </div>
-  <div class="ni-c on" id="ni-c" onclick="goPage('home',document.getElementById('ni-home'))">
-    <div class="ni-cb"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-    <div class="ni-lbl" style="color:var(--text2)">홈</div>
-  </div>
-  <div class="ni" id="ni-calc" onclick="goPage('calc',this)">
-    <div class="ni-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="11" y2="18"/></svg></div>
-    <div class="ni-lbl">계산기</div>
-  </div>
-  <div class="ni" id="ni-profile" onclick="goPage('profile',this);loadProfile()">
-    <div class="ni-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
-    <div class="ni-lbl">프로필</div>
-  </div>
-</nav>
-<!-- hidden home nav ref -->
-<div id="ni-home" style="display:none"></div>
-
-<div class="modal-wrap" id="modal"><div class="modal-box"><div style="font-size:13px;font-weight:700;color:var(--purple-light);text-shadow:0 0 10px rgba(192,132,252,0.5);letter-spacing:.5px;margin-bottom:12px" id="mtit">완료</div><div class="modal-sub" id="msub"></div><button class="modal-close" onclick="closeModal()">확인</button></div></div>
-<div class="toast" id="toast"></div>
-
-<script>
-// ═══════════════════
-// SPIDER WEB
-// ═══════════════════
-(function(){
-  const canvas = document.getElementById('web-canvas');
-  const ctx = canvas.getContext('2d');
-  let W, H, cx, cy;
-
-  function resize(){
-    W = canvas.width  = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-    cx = W * 0.75; cy = H * 0.28;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  function drawWeb(){
-    ctx.clearRect(0,0,W,H);
-    const rings = 9, spokes = 12;
-    const maxR = Math.max(W,H) * 0.72;
-
-    // Radial spokes
-    for(let i=0;i<spokes;i++){
-      const angle = (i/spokes)*Math.PI*2 - Math.PI/2;
-      const x = cx + Math.cos(angle)*maxR;
-      const y = cy + Math.sin(angle)*maxR;
-      const grad = ctx.createLinearGradient(cx,cy,x,y);
-      grad.addColorStop(0,'rgba(168,85,247,0.35)');
-      grad.addColorStop(0.4,'rgba(139,92,246,0.18)');
-      grad.addColorStop(1,'rgba(124,58,237,0.0)');
-      ctx.beginPath();
-      ctx.moveTo(cx,cy);
-      ctx.lineTo(x,y);
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = 0.8;
-      ctx.stroke();
-    }
-
-    // Concentric rings
-    for(let r=1;r<=rings;r++){
-      const radius = (r/rings)*maxR;
-      ctx.beginPath();
-      for(let i=0;i<spokes;i++){
-        const angle = (i/spokes)*Math.PI*2 - Math.PI/2;
-        const x = cx + Math.cos(angle)*radius;
-        const y = cy + Math.sin(angle)*radius;
-        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-      }
-      ctx.closePath();
-      const alpha = 0.28 - (r/rings)*0.22;
-      ctx.strokeStyle = `rgba(168,85,247,${alpha})`;
-      ctx.lineWidth = 0.7;
-      ctx.stroke();
-    }
-
-    // Center glow
-    const glow = ctx.createRadialGradient(cx,cy,0,cx,cy,80);
-    glow.addColorStop(0,'rgba(168,85,247,0.25)');
-    glow.addColorStop(1,'rgba(168,85,247,0)');
-    ctx.beginPath();
-    ctx.arc(cx,cy,80,0,Math.PI*2);
-    ctx.fillStyle = glow;
-    ctx.fill();
-  }
-
-  drawWeb();
-
-  // Subtle pulse animation
-  let t=0;
-  function animate(){
-    t += 0.008;
-    canvas.style.opacity = 0.45 + Math.sin(t)*0.08;
-    requestAnimationFrame(animate);
-  }
-  animate();
-})();
-
-// ═══════════════════
-// AUTH
-// ═══════════════════
-let token = localStorage.getItem('sb_token'), me = null;
-
-window.addEventListener('DOMContentLoaded', () => {
-  const p = new URLSearchParams(location.search);
-  if(p.get('verified')==='true'){
-    const u=p.get('u')||'';
-    if(u) document.getElementById('vsub').textContent=u+'님, 로그인하여 SpiderBOT을 이용하세요';
-    document.getElementById('vbanner').style.display='block';
-    atab('login'); history.replaceState({},'','/');
-  }
-  if(p.get('error')){
-    const m={expired:'인증 링크가 만료되었습니다.',invalid:'유효하지 않은 링크.',server:'서버 오류.'};
-    showErr(m[p.get('error')]||'오류가 발생했습니다'); history.replaceState({},'','/');
-  }
-  if(token) autoLogin();
-});
-
-async function autoLogin(){
-  try{
-    const r=await fetch('/api/me',{headers:{Authorization:'Bearer '+token}});
-    if(!r.ok) throw new Error();
-    loginOK(await r.json());
-  }catch{ localStorage.removeItem('sb_token'); token=null; }
-}
-
-function loginOK(u){
-  me=u;
-  document.getElementById('auth-wrap').classList.add('hidden');
-  document.getElementById('t-user').textContent=u.username;
-  document.getElementById('t-user').style.display='inline';
-  document.getElementById('logout-btn').style.display='inline';
-  document.getElementById('cur-plan').textContent=u.plan&&u.plan!=='none'?u.plan:'플랜 없음';
-}
-
-// 샘플 거래내역 (실제로는 DB에서 가져옴)
-const sampleTx = [
-  {type:'deposit', coin:'USDT',network:'TRC20',amount:500000,usd:350,date:'2025.07.10 14:32',hash:'TXabc...def1',status:'완료'},
-  {type:'withdraw',coin:'USDT',network:'TRC20',amount:150000,usd:105,date:'2025.07.08 09:15',hash:'TX123...456a',status:'완료'},
-  {type:'deposit', coin:'BTC', network:'BTC', amount:1000000,usd:700,date:'2025.07.01 18:45',hash:'bc1q...xyz9',status:'완료'},
-  {type:'withdraw',coin:'ETH', network:'ERC20',amount:200000,usd:140,date:'2025.06.28 11:20',hash:'0xabc...789b',status:'완료'},
-  {type:'deposit', coin:'USDT',network:'ERC20',amount:2000000,usd:1400,date:'2025.06.15 16:00',hash:'0x111...222c',status:'완료'},
-];
-
-let currentFilter = 'all';
-
-function loadProfile(){
-  if(!me) return;
-  document.getElementById('prof-avatar').textContent = me.username[0].toUpperCase();
-  document.getElementById('prof-username').textContent = me.username;
-  document.getElementById('prof-plan').textContent = me.plan && me.plan!=='none' ? me.plan+' 플랜' : '플랜 없음';
-  document.getElementById('prof-uid').textContent = me.user_id || '로딩 중...';
-  document.getElementById('prof-email').textContent = me.email || '-';
-  const d = me.created_at ? new Date(me.created_at) : null;
-  document.getElementById('prof-date').textContent = d ? d.getFullYear()+'.'+(d.getMonth()+1).toString().padStart(2,'0')+'.'+d.getDate().toString().padStart(2,'0') : '-';
-  document.getElementById('prof-profit').textContent = krw(me.total_profit||0);
-  renderTx('all');
-}
-
-function renderTx(filter){
-  currentFilter = filter;
-  const list = filter==='all' ? sampleTx : sampleTx.filter(t=>t.type===filter);
-  const el = document.getElementById('tx-list');
-  if(!list.length){
-    el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3);font-size:14px">거래 내역이 없습니다</div>`;
-    return;
-  }
-  el.innerHTML = list.map(tx=>{
-    const isIn = tx.type==='deposit';
-    const color = isIn ? 'var(--green)' : 'var(--red)';
-    const bg = isIn ? 'rgba(0,230,118,0.08)' : 'rgba(255,59,92,0.08)';
-    const border = isIn ? 'rgba(0,230,118,0.2)' : 'rgba(255,59,92,0.2)';
-    const sign = isIn ? '+' : '-';
-    const glowColor = isIn ? 'rgba(0,230,118,0.3)' : 'rgba(255,59,92,0.3)';
-    return `<div style="background:rgba(14,12,30,0.7);border:1px solid rgba(139,92,246,0.15);border-radius:14px;padding:16px;margin-bottom:10px;transition:all .2s">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:36px;height:36px;border-radius:10px;background:${bg};border:1px solid ${border};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${color}">${tx.coin}</div>
-          <div>
-            <div style="font-size:14px;font-weight:700">${isIn?'입금':'출금'} · ${tx.network}</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px">${tx.date}</div>
+    <div class="dash-card">
+      <div class="dash-topbar">
+        <div class="dash-dots">
+          <span style="background:#E85A5A"></span>
+          <span style="background:#F0A030"></span>
+          <span style="background:#3DCC8E"></span>
+        </div>
+        <span class="dash-title-bar">SPIDERBOT 대시보드</span>
+        <span style="font-size:10px;color:var(--green);font-weight:500">● 실시간</span>
+      </div>
+      <div class="dash-body">
+        <div class="dash-stats">
+          <div class="dash-stat">
+            <div class="dash-stat-label">잔액</div>
+            <div class="dash-stat-val">5,000,000원</div>
+            <div class="dash-stat-change" style="color:var(--green)">+4% 오늘</div>
+          </div>
+          <div class="dash-stat">
+            <div class="dash-stat-label">출금</div>
+            <div class="dash-stat-val">892,500원</div>
+            <div class="dash-stat-change" style="color:var(--text3)">이번 달</div>
+          </div>
+          <div class="dash-stat">
+            <div class="dash-stat-label">수익</div>
+            <div class="dash-stat-val">2,140,000원</div>
+            <div class="dash-stat-change" style="color:var(--green)">+18% 전월比</div>
           </div>
         </div>
-        <div style="text-align:right">
-          <div style="font-family:'Inter',sans-serif;font-size:15px;font-weight:700;color:${color};text-shadow:0 0 6px ${glowColor}">${sign}${krw(tx.amount)}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">≈ $${tx.usd}</div>
+        <div class="chart-wrap">
+          <div class="chart-head">
+            <span class="chart-head-title">수익 추이 — 7일</span>
+            <span class="chart-badge">+12.4%</span>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:6px;height:64px">
+            <div style="flex:1;background:rgba(74,158,232,.18);border-radius:3px 3px 0 0;height:55%;border-top:2px solid var(--sky)"></div>
+            <div style="flex:1;background:rgba(74,158,232,.18);border-radius:3px 3px 0 0;height:72%;border-top:2px solid var(--sky)"></div>
+            <div style="flex:1;background:rgba(74,158,232,.18);border-radius:3px 3px 0 0;height:48%;border-top:2px solid var(--sky)"></div>
+            <div style="flex:1;background:rgba(74,158,232,.18);border-radius:3px 3px 0 0;height:88%;border-top:2px solid var(--sky)"></div>
+            <div style="flex:1;background:rgba(74,158,232,.18);border-radius:3px 3px 0 0;height:65%;border-top:2px solid var(--sky)"></div>
+            <div style="flex:1;background:rgba(74,158,232,.25);border-radius:3px 3px 0 0;height:92%;border-top:2px solid var(--sky2)"></div>
+            <div style="flex:1;background:rgba(74,158,232,.35);border-radius:3px 3px 0 0;height:100%;border-top:2px solid var(--sky2)"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:5px">
+            <span style="font-size:10px;color:var(--text3)">월</span>
+            <span style="font-size:10px;color:var(--text3)">화</span>
+            <span style="font-size:10px;color:var(--text3)">수</span>
+            <span style="font-size:10px;color:var(--text3)">목</span>
+            <span style="font-size:10px;color:var(--text3)">금</span>
+            <span style="font-size:10px;color:var(--text3)">토</span>
+            <span style="font-size:10px;color:var(--sky)">오늘</span>
+          </div>
+        </div>
+        <div class="tx-list">
+          <div class="tx-item">
+            <div class="tx-icon" style="background:#0E2230;color:#4A9EE8">BT</div>
+            <div class="tx-info">
+              <div class="tx-name">BTC 수익 정산</div>
+              <div class="tx-date">오늘, 오전 10:00</div>
+            </div>
+            <div class="tx-amount" style="color:var(--green)">+75,000원</div>
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon" style="background:#1A1020;color:#A87EE8">ET</div>
+            <div class="tx-info">
+              <div class="tx-name">ETH 수익 정산</div>
+              <div class="tx-date">어제, 오전 10:00</div>
+            </div>
+            <div class="tx-amount" style="color:var(--green)">+75,000원</div>
+          </div>
         </div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:11px;color:var(--text3);font-family:'Inter',sans-serif">TX: ${tx.hash}</div>
-        <div style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:rgba(0,230,118,0.1);color:var(--green);border:1px solid rgba(0,230,118,0.2)">${tx.status}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
+    </div>
+  </div>
+</section>
 
-function filterTx(f, el){
-  document.querySelectorAll('.tx-filter').forEach(b=>{
-    b.style.background = 'rgba(255,255,255,0.04)';
-    b.style.borderColor = 'rgba(255,255,255,0.1)';
-    b.style.color = 'var(--text3)';
-    b.style.boxShadow = 'none';
-  });
-  if(f==='all'){el.style.background='linear-gradient(135deg,var(--purple2),var(--purple))';el.style.borderColor='transparent';el.style.color='#fff';el.style.boxShadow='0 0 10px rgba(168,85,247,0.3)'}
-  else if(f==='deposit'){el.style.background='rgba(0,230,118,0.12)';el.style.borderColor='rgba(0,230,118,0.3)';el.style.color='var(--green)';el.style.boxShadow='0 0 8px rgba(0,230,118,0.15)'}
-  else{el.style.background='rgba(255,59,92,0.12)';el.style.borderColor='rgba(255,59,92,0.3)';el.style.color='var(--red)';el.style.boxShadow='0 0 8px rgba(255,59,92,0.15)'}
-  renderTx(f);
-}
+<!-- LOGOS -->
+<div class="logos-section">
+  <div class="logos-label">현재 운용 중인 투자 플랜</div>
+  <div class="logos-track-wrap">
+    <div class="logos-track" id="logosTrack"></div>
+  </div>
+</div>
 
-function doLogout(){
-  localStorage.removeItem('sb_token'); token=null; me=null;
-  document.getElementById('auth-wrap').classList.remove('hidden');
-  document.getElementById('t-user').style.display='none';
-  document.getElementById('logout-btn').style.display='none';
-  atab('login'); showToast('로그아웃 되었습니다');
-}
+<!-- STATS -->
+<section class="stats-section">
+  <div class="stat-block">
+    <div class="stat-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="stat-num" data-target="2847" data-suffix="억원+">0</div>
+    <div class="stat-label">총 운용 자산</div>
+    <div class="stat-bar-wrap"><div class="stat-bar" style="width:0%" data-width="92%"></div></div>
+    <div class="stat-trend" style="color:var(--green)">
+      <svg viewBox="0 0 24 24"><polyline points="18,15 12,9 6,15"/></svg>
+      전월 대비 +34% 증가
+    </div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-icon">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </div>
+    <div class="stat-num" data-target="1284" data-suffix="명+">0</div>
+    <div class="stat-label">활성 투자자</div>
+    <div class="stat-bar-wrap"><div class="stat-bar" style="width:0%;background:#3DCC8E" data-width="76%"></div></div>
+    <div class="stat-trend" style="color:var(--green)">
+      <svg viewBox="0 0 24 24"><polyline points="18,15 12,9 6,15"/></svg>
+      이번 분기 +320명 신규
+    </div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-icon" style="background:rgba(61,204,142,.1);border-color:rgba(61,204,142,.15)">
+      <svg viewBox="0 0 24 24" style="stroke:var(--green)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+    </div>
+    <div class="stat-num" data-target="99.98" data-suffix="%" data-decimal="2">0</div>
+    <div class="stat-label">서비스 가동률</div>
+    <div class="stat-bar-wrap"><div class="stat-bar" style="width:0%;background:#3DCC8E" data-width="99.98%"></div></div>
+    <div class="stat-trend" style="color:var(--green)">
+      <svg viewBox="0 0 24 24"><polyline points="18,15 12,9 6,15"/></svg>
+      이번 달 무중단 운영
+    </div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-icon" style="background:rgba(136,136,248,.1);border-color:rgba(136,136,248,.15)">
+      <svg viewBox="0 0 24 24" style="stroke:#8888F8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </div>
+    <div class="stat-num" data-target="6.8" data-suffix="%" data-decimal="1">0</div>
+    <div class="stat-label">평균 일 수익률</div>
+    <div class="stat-bar-wrap"><div class="stat-bar" style="width:0%;background:#8888F8" data-width="68%"></div></div>
+    <div class="stat-trend" style="color:#8888F8">
+      <svg viewBox="0 0 24 24"><polyline points="18,15 12,9 6,15"/></svg>
+      10단계 플랜 평균 기준
+    </div>
+  </div>
+</section>
 
-function atab(t){
-  clrMsg();
-  ['fl','freg','frs'].forEach(x=>document.getElementById(x).style.display='none');
-  document.getElementById('tl').classList.toggle('on',t==='login');
-  document.getElementById('tr').classList.toggle('on',t==='reg');
-  document.getElementById('rslink').style.display=t==='resend'?'none':'block';
-  if(t==='login') document.getElementById('fl').style.display='block';
-  else if(t==='reg') document.getElementById('freg').style.display='block';
-  else document.getElementById('frs').style.display='block';
-}
+<!-- FEATURES — STICKY STACK -->
+<section class="features-section" id="features">
+  <div class="features-header silk-reveal">
+    <div class="section-tag">플랫폼 주요 기능</div>
+    <h2 class="section-title">수익 자동화에 필요한 모든 것</h2>
+    <p class="section-sub">하나의 플랫폼으로 투자, 수익 확인, 출금까지. 복잡한 도구 전환 없이, 연동 걱정 없이.</p>
+  </div>
+  <div class="sticky-layout">
+    <div class="sticky-cards">
 
-function clrMsg(){document.getElementById('aerr').classList.remove('show');document.getElementById('aok').classList.remove('show')}
-function showErr(m){const e=document.getElementById('aerr');e.textContent=m;e.classList.add('show');document.getElementById('aok').classList.remove('show')}
-function showOK(m){const e=document.getElementById('aok');e.textContent=m;e.classList.add('show');document.getElementById('aerr').classList.remove('show')}
-function tp(id,btn){const el=document.getElementById(id);el.type=el.type==='password'?'text':'password';btn.textContent=el.type==='password'?'보기':'숨기기'}
-
-function cr(){
-  const pw=document.getElementById('rp').value,u=document.getElementById('ru').value;
-  const s=(id,ok)=>{const e=document.getElementById(id);e.className='rule '+(ok?'ok':'no')};
-  s('r1',pw.length>=8);s('r2',/[!@#$%^&*()\-_=+\[\]{};':",.<>/?\\|]/.test(pw));
-  s('r3',u.length>=3&&u.length<=20);s('r4',/^[a-zA-Z0-9_]*$/.test(u)&&u.length>0);
-}
-
-async function doReg(){
-  clrMsg();
-  const u=document.getElementById('ru').value.trim(),e=document.getElementById('re').value.trim(),p=document.getElementById('rp').value;
-  const btn=document.getElementById('rbtn');
-  if(!u||!e||!p) return showErr('모든 항목을 입력해주세요');
-  btn.disabled=true;btn.textContent='처리 중...';
-  try{
-    const r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,email:e,password:p})});
-    const d=await r.json();
-    if(!r.ok) return showErr(d.error);
-    showOK(d.message);
-    document.getElementById('ru').value='';document.getElementById('re').value='';document.getElementById('rp').value='';cr();
-  }catch{showErr('네트워크 오류가 발생했습니다')}
-  finally{btn.disabled=false;btn.textContent='회원가입 & 인증 메일 발송'}
-}
-
-async function doLogin(){
-  clrMsg();
-  const u=document.getElementById('lu').value.trim(),p=document.getElementById('lp').value;
-  const btn=document.getElementById('lbtn');
-  if(!u||!p) return showErr('아이디와 비밀번호를 입력해주세요');
-  btn.disabled=true;btn.textContent='로그인 중...';
-  try{
-    const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
-    const d=await r.json();
-    if(!r.ok) return showErr(d.error);
-    localStorage.setItem('sb_token',d.token);token=d.token;
-    loginOK(d.user);showToast('환영합니다, '+d.user.username+'님');
-  }catch{showErr('네트워크 오류가 발생했습니다')}
-  finally{btn.disabled=false;btn.textContent='로그인'}
-}
-
-async function doResend(){
-  clrMsg();
-  const e=document.getElementById('rse').value.trim(),btn=document.getElementById('rsbtn');
-  if(!e) return showErr('이메일을 입력해주세요');
-  btn.disabled=true;btn.textContent='발송 중...';
-  try{
-    const r=await fetch('/api/resend-verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e})});
-    const d=await r.json();
-    if(!r.ok) return showErr(d.error);
-    showOK(d.message);
-  }catch{showErr('네트워크 오류가 발생했습니다')}
-  finally{btn.disabled=false;btn.textContent='인증 메일 재발송'}
-}
-
-document.addEventListener('keydown',e=>{
-  if(e.key!=='Enter'||document.getElementById('auth-wrap').classList.contains('hidden')) return;
-  if(document.getElementById('freg').style.display!=='none') doReg();
-  else if(document.getElementById('frs').style.display!=='none') doResend();
-  else doLogin();
-});
-
-// ═══════════════════
-// APP
-// ═══════════════════
-let botOn=true, crate=4;
-let calcAmt=0, calcDays=7;
-let calcPlanIdx=-1;
-
-function krw(n){return Math.round(n).toLocaleString('ko-KR')+'원'}
-
-const PLANS=[
-  {name:'Starter',  rate:2,    min:10000,      max:99999},
-  {name:'Bronze',   rate:2.5,  min:100000,     max:499999},
-  {name:'Silver',   rate:4,    min:500000,     max:999999},
-  {name:'Gold',     rate:6,    min:1000000,    max:4999999},
-  {name:'Platinum', rate:8,    min:5000000,    max:9999999},
-  {name:'Diamond',  rate:9.5,  min:10000000,   max:24999999},
-  {name:'Royal',    rate:11,   min:25000000,   max:74999999},
-  {name:'Imperial', rate:12.5, min:75000000,   max:99999999},
-  {name:'Dynasty',  rate:14,   min:100000000,  max:149999999},
-  {name:'Legacy',   rate:15,   min:150000000,  max:Infinity},
-];
-const MAX_AMT = 1000000000000000; // 1000조
-const MAX_DAYS = 3650;
-
-// 최대값 초과 입력 차단
-function blockOverMax(e, input, max){
-  const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab','Enter'];
-  if(allowed.includes(e.key)) return true;
-  const cur = input.value + (e.key.match(/[0-9]/) ? e.key : '');
-  if(parseInt(cur) > max){
-    showToast('최대 '+max.toLocaleString('ko-KR')+' 이상 입력할 수 없습니다');
-    return false;
-  }
-  return true;
-}
-
-function findPlan(amt){
-  if(amt<=0) return null;
-  for(let i=0;i<PLANS.length;i++){
-    if(amt>=PLANS[i].min && (PLANS[i].max===Infinity||amt<=PLANS[i].max)) return i;
-  }
-  return null;
-}
-
-function addAmt(v){
-  calcAmt = Math.min(calcAmt+v, MAX_AMT);
-  document.getElementById('c-amt-input').value = calcAmt||'';
-  updateCalc();
-}
-
-function resetAmt(){
-  calcAmt=0;
-  document.getElementById('c-amt-input').value='';
-  updateCalc();
-}
-
-function onAmtInput(val){
-  const n = parseInt(val)||0;
-  if(n > MAX_AMT){
-    document.getElementById('c-amt-input').value = MAX_AMT;
-    calcAmt = MAX_AMT;
-    showToast('최대 입력 금액은 1,000조원입니다');
-  } else {
-    calcAmt = Math.max(0, n);
-  }
-  updateCalc();
-}
-
-function setPeriod(el, days){
-  calcDays = days;
-  document.getElementById('c-days-input').value = days;
-  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-  updateCalc();
-}
-
-function onDaysInput(val){
-  const d = parseInt(val)||0;
-  calcDays = Math.min(Math.max(1,d), MAX_DAYS);
-  // 최댓값 초과 입력시 보정
-  if(d > MAX_DAYS){
-    document.getElementById('c-days-input').value = MAX_DAYS;
-    showToast('최대 '+MAX_DAYS.toLocaleString()+'일까지 계산 가능합니다');
-  }
-  // 빠른 선택 버튼 해제
-  document.querySelectorAll('.period-btn').forEach(b=>{
-    b.classList.toggle('on', parseInt(b.textContent)===calcDays);
-  });
-  updateCalc();
-}
-
-function updateCalc(){
-  const idx = findPlan(calcAmt);
-  const plan = idx!==null ? PLANS[idx] : null;
-  const rate = plan ? plan.rate : 0;
-
-  // 금액 표시
-  const dispEl = document.getElementById('c-amt-disp');
-  if(calcAmt>0){
-    dispEl.textContent = calcAmt.toLocaleString('ko-KR')+'원';
-  } else {
-    dispEl.textContent = '';
-  }
-
-  // 플랜 / ROI 표시
-  const planNameEl = document.getElementById('c-plan-name');
-  const planRoiEl  = document.getElementById('c-plan-roi');
-  if(plan){
-    planNameEl.textContent = plan.name+' 플랜 적용';
-    planNameEl.style.color = 'var(--green)';
-    planRoiEl.textContent  = rate+'%';
-  } else if(calcAmt>0){
-    planNameEl.textContent = '범위 초과';
-    planNameEl.style.color = 'var(--red)';
-    planRoiEl.textContent  = '- %';
-  } else {
-    planNameEl.textContent = '금액을 입력하세요';
-    planNameEl.style.color = 'var(--text3)';
-    planRoiEl.textContent  = '- %';
-  }
-
-  // 계산
-  const daily = calcAmt * rate / 100;
-  const total = daily * calcDays;
-  const final = calcAmt + total;
-  const pct   = calcAmt>0 && rate>0 ? (total/calcAmt*100).toFixed(1) : '0.0';
-
-  document.getElementById('c-daily').textContent = '₩'+Math.round(daily).toLocaleString('ko-KR');
-  document.getElementById('c-total').textContent = '₩'+Math.round(total).toLocaleString('ko-KR');
-  document.getElementById('c-final').textContent = '₩'+Math.round(final).toLocaleString('ko-KR');
-  document.getElementById('c-pct').textContent   = '+'+pct+'%';
-  document.getElementById('c-roi').textContent   = rate>0 ? rate+'%' : '- %';
-
-  const ctaTxt = document.getElementById('cta-txt');
-  if(calcAmt>0 && rate>0){
-    ctaTxt.textContent = calcDays+'일 후 ₩'+Math.round(total).toLocaleString('ko-KR')+' 수익 예상';
-  } else {
-    ctaTxt.textContent = '계속하려면 금액을 입력하세요';
-  }
-}
-// 초기화
-document.getElementById('c-days-input').value = 7;
-updateCalc();
-
-const invs=[
-  {n:'김민준',id:'SB-1042',plan:'Silver',inv:500000,rate:4,days:178,st:'대기'},
-  {n:'이서연',id:'SB-0873',plan:'Gold',inv:1000000,rate:6,days:92,st:'대기'},
-  {n:'박도현',id:'SB-1157',plan:'Starter',inv:50000,rate:2,days:45,st:'완료'},
-  {n:'최지아',id:'SB-0423',plan:'Diamond',inv:10000000,rate:9.5,days:203,st:'대기'},
-  {n:'정유진',id:'SB-1289',plan:'Silver',inv:800000,rate:4,days:67,st:'완료'},
-];
-const wdh=[
-  {t:'수익 출금',d:'2025.07.10',a:150000,s:'done'},{t:'수익 출금',d:'2025.07.05',a:350000,s:'done'},
-  {t:'수익 출금',d:'2025.06.28',a:200000,s:'done'},{t:'수익 출금',d:'2025.06.20',a:192500,s:'wait'},
-];
-
-function goPage(id,el){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.ni,.ni-c').forEach(n=>n.classList.remove('on'));
-  document.getElementById('page-'+id).classList.add('on');
-  if(el) el.classList.add('on');
-  const nc=document.getElementById('ni-c');
-  if(id==='home') nc.classList.add('on'); else nc.classList.remove('on');
-  window.scrollTo(0,0);
-}
-
-function loadProfile(){
-  if(!me) return;
-  const planNames={none:'플랜 없음',starter:'Starter',bronze:'Bronze',silver:'Silver',gold:'Gold',platinum:'Platinum',diamond:'Diamond',royal:'Royal',imperial:'Imperial',dynasty:'Dynasty',legacy:'Legacy'};
-  document.getElementById('pf-avatar').textContent = me.username ? me.username[0].toUpperCase() : '?';
-  document.getElementById('pf-username').textContent = me.username || '-';
-  document.getElementById('pf-plan').textContent = planNames[me.plan] || '플랜 없음';
-  document.getElementById('pf-id').textContent = me.username || '-';
-  document.getElementById('pf-email').textContent = me.email || '-';
-  document.getElementById('pf-uid').textContent = me.user_id || '-';
-  document.getElementById('pf-profit').textContent = krw(me.total_profit || 0);
-  document.getElementById('pf-balance').textContent = krw(me.balance || 0);
-  const d = me.created_at ? new Date(me.created_at) : null;
-  document.getElementById('pf-date').textContent = d ? `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}` : '-';
-
-  // 거래내역 (현재 더미 데이터 — 추후 실제 연동)
-  const txs = [
-    {type:'입금',coin:'USDT (TRC20)',amount:'+500,000원',date:'2025.01.15',hash:'TRx...a4f2'},
-    {type:'출금',coin:'USDT (TRC20)',amount:'-150,000원',date:'2025.07.10',hash:'TRx...9c3e'},
-    {type:'출금',coin:'USDT (TRC20)',amount:'-350,000원',date:'2025.07.05',hash:'TRx...2b8d'},
-  ];
-  const txEl = document.getElementById('pf-txlist');
-  if(!txs.length){
-    txEl.innerHTML = '<div style="text-align:center;padding:24px;font-size:13px;color:var(--text3)">거래 내역이 없습니다</div>';
-    return;
-  }
-  txEl.innerHTML = txs.map(tx=>`
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-      <div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-          <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:${tx.type==='입금'?'rgba(0,230,118,0.12)':'rgba(168,85,247,0.12)'};color:${tx.type==='입금'?'var(--green)':'var(--purple-light)'}">${tx.type}</span>
-          <span style="font-size:12px;color:var(--text2)">${tx.coin}</span>
+      <div class="sticky-card active" data-panel="0">
+        <div class="sticky-card-icon">
+          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         </div>
-        <div style="font-size:11px;color:var(--text3)">${tx.date} · ${tx.hash}</div>
+        <h3>AI 자동 거래</h3>
+        <p>봇이 24시간 쉬지 않고 자동으로 거래하며 수익을 창출합니다. 수면 중에도, 출근 중에도 봇은 멈추지 않습니다.</p>
+        <div class="sticky-card-pills">
+          <span class="sc-pill">24시간 자동화</span>
+          <span class="sc-pill">실시간 체결</span>
+          <span class="sc-pill">무중단 운영</span>
+        </div>
       </div>
-      <div style="font-family:'Inter',sans-serif;font-size:15px;font-weight:700;color:${tx.type==='입금'?'var(--green)':'var(--purple-light)'}">
-        ${tx.amount}
+
+      <div class="sticky-card" data-panel="1">
+        <div class="sticky-card-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        </div>
+        <h3>매일 수익 정산</h3>
+        <p>매일 오전 10시, 전날 발생한 수익이 자동으로 계좌에 정산됩니다. 수익 확인부터 출금 신청까지 원클릭으로.</p>
+        <div class="sticky-card-pills">
+          <span class="sc-pill">매일 오전 10시</span>
+          <span class="sc-pill">자동 수익 분배</span>
+          <span class="sc-pill">원화 정산</span>
+        </div>
       </div>
-    </div>`).join('');
-}
 
-function toggleBot(){
-  botOn=!botOn;
-  const el=document.getElementById('bottxt'),p=el.parentElement;
-  if(botOn){el.textContent='봇 활성 — 실시간 운용 중';p.classList.add('on');showToast('봇 활성화됨')}
-  else{el.textContent='봇 비활성 — 운용 중단됨';p.classList.remove('on');showToast('봇 비활성화됨')}
-}
+      <div class="sticky-card" data-panel="2">
+        <div class="sticky-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3>10단계 투자 플랜</h3>
+        <p>1만원 스타터부터 1억원 이상의 레거시 플랜까지. 투자금 규모에 맞는 플랜을 선택하면 그에 맞는 ROI가 자동 적용됩니다.</p>
+        <div class="sticky-card-pills">
+          <span class="sc-pill">10단계 플랜</span>
+          <span class="sc-pill">최대 15% 일 ROI</span>
+          <span class="sc-pill">자유 전환</span>
+        </div>
+      </div>
 
-function sact(m){
-  document.getElementById('bdep').className='act-btn '+(m==='dep'?'on':'off');
-  document.getElementById('bwd').className='act-btn '+(m==='wd'?'on':'off');
-  showToast(m==='dep'?'입금 모드':'출금 모드');
-}
+      <div class="sticky-card" data-panel="3">
+        <div class="sticky-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>자산 보호 시스템</h3>
+        <p>AES-256 암호화 및 2단계 인증으로 모든 투자금을 보호합니다. 투자자 자산과 운영 자금은 완전히 분리 보관됩니다.</p>
+        <div class="sticky-card-pills">
+          <span class="sc-pill">AES-256 암호화</span>
+          <span class="sc-pill">2단계 인증</span>
+          <span class="sc-pill">자산 분리 보관</span>
+        </div>
+      </div>
 
-function selPlan(n,r,mn,mx){showModal(n+' 플랜 신청 접수',n+' 플랜 (일 '+r+')\n'+mn+' ~ '+mx+'\n\n신청이 접수되었습니다.\n담당자가 확인 후 연락드립니다.')}
+    </div>
 
-document.getElementById('trades').innerHTML=
-  [{pair:'BTC/USDT',type:'매수',profit:'+23,400원',time:'09:42'},{pair:'ETH/USDT',type:'매도',profit:'+18,200원',time:'09:15'},{pair:'SOL/USDT',type:'매수',profit:'+11,800원',time:'08:53'},{pair:'BTC/USDT',type:'매도',profit:'+21,600원',time:'08:21'}]
-  .map(t=>`<div class="hi"><div><div style="font-size:14px;font-weight:500">${t.pair} <span style="font-size:11px;padding:2px 7px;border-radius:6px;background:${t.type==='매수'?'rgba(0,230,118,0.1)':'rgba(255,59,92,0.1)'};color:${t.type==='매수'?'var(--green)':'var(--red)'}">${t.type}</span></div><div style="font-size:11px;color:var(--text3);margin-top:3px">${t.time}</div></div><div class="ha done">${t.profit}</div></div>`).join('');
+    <div class="sticky-panel-wrap">
+      <div class="sticky-panel">
+        <div class="panel-topbar">
+          <div class="panel-dots">
+            <span style="background:#E85A5A"></span>
+            <span style="background:#F0A030"></span>
+            <span style="background:#3DCC8E"></span>
+          </div>
+          <span style="font-size:11px;color:var(--text3);margin-left:8px" id="panelLabel">AI 거래</span>
+        </div>
+        <div class="panel-content">
 
-document.getElementById('wdhist').innerHTML=wdh.map(h=>`<div class="hi"><div><div style="font-size:14px;font-weight:500">${h.t}</div><div style="font-size:11px;color:var(--text3);margin-top:3px">${h.d}</div></div><div class="ha ${h.s}">-${krw(h.a)}</div></div>`).join('');
+          <!-- Panel 0: AI 거래 -->
+          <div class="panel-view active" id="panel-0">
+            <div class="pm-row">
+              <div class="pm-card">
+                <div class="pm-label">오늘 수익</div>
+                <div class="pm-val">75,000원</div>
+                <div class="pm-change" style="color:var(--green)">+8건 체결</div>
+              </div>
+              <div class="pm-card">
+                <div class="pm-label">체결 속도</div>
+                <div class="pm-val">0.8초</div>
+                <div class="pm-change" style="color:var(--text3)">평균 체결</div>
+              </div>
+            </div>
+            <div class="pm-list">
+              <div class="pm-list-item">
+                <div class="pm-list-icon" style="background:#0A2030;color:#4A9EE8">BT</div>
+                <div class="pm-list-info">
+                  <div class="pm-list-name">BTC/USDT 매수</div>
+                  <div class="pm-list-sub">암호화폐 · 체결 완료</div>
+                </div>
+                <div class="pm-list-amt" style="color:var(--green)">+23,400원</div>
+              </div>
+              <div class="pm-list-item">
+                <div class="pm-list-icon" style="background:#0A1A28;color:#7EC8F0">ET</div>
+                <div class="pm-list-info">
+                  <div class="pm-list-name">ETH/USDT 매도</div>
+                  <div class="pm-list-sub">암호화폐 · 체결 완료</div>
+                </div>
+                <div class="pm-list-amt" style="color:var(--green)">+18,200원</div>
+              </div>
+              <div class="pm-list-item">
+                <div class="pm-list-icon" style="background:#101828;color:#8888F8">SO</div>
+                <div class="pm-list-info">
+                  <div class="pm-list-name">SOL/USDT 매수</div>
+                  <div class="pm-list-sub">암호화폐 · 처리 중</div>
+                </div>
+                <div class="pm-list-amt" style="color:var(--text2)">+11,800원</div>
+              </div>
+            </div>
+          </div>
 
-function renderInv(){
-  document.getElementById('invlist').innerHTML=invs.map((v,i)=>{
-    const d=Math.round(v.inv*v.rate/100);
-    return `<div class="icard"><div class="itop"><div class="iinfo"><div class="iav">${v.n[0]}</div><div><div style="font-size:14px;font-weight:700">${v.n}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${v.id}</div></div></div><div style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:18px;background:rgba(168,85,247,.1);color:var(--purple-light);border:1px solid rgba(168,85,247,.25)">${v.plan}</div></div><div class="imetrics"><div class="imet"><div class="iml">원금</div><div class="imv" style="color:var(--text2);font-size:11px">${krw(v.inv)}</div></div><div class="imet"><div class="iml">일 수익</div><div class="imv" style="color:var(--green)">${krw(d)}</div></div><div class="imet"><div class="iml">상태</div><div class="imv" style="color:${v.st==='완료'?'var(--green)':'var(--purple-light)'}">${v.st}</div></div></div><button class="distbtn" onclick="dist(${i})" ${v.st==='완료'?'disabled':''}>${v.st==='완료'?'분배 완료':'수익 분배 +'+krw(d)}</button></div>`;
-  }).join('');
-}
-renderInv();
+          <!-- Panel 1: 수익 정산 -->
+          <div class="panel-view" id="panel-1">
+            <div class="pm-row">
+              <div class="pm-card">
+                <div class="pm-label">이번 달 수익</div>
+                <div class="pm-val">2,140,000원</div>
+                <div class="pm-change" style="color:var(--green)">향후 30일 예상</div>
+              </div>
+              <div class="pm-card">
+                <div class="pm-label">이상 감지</div>
+                <div class="pm-val">0건</div>
+                <div class="pm-change" style="color:var(--text3)">이번 주</div>
+              </div>
+            </div>
+            <div class="pm-chart-mini">
+              <div class="pm-label">수익 추이 — 8주</div>
+              <div class="pm-sparkline" id="sparkline"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <span style="font-size:12px;color:var(--text2)">BTC 수익</span>
+                  <span style="font-size:12px;font-weight:600">840,000원</span>
+                </div>
+                <div class="pm-bar-wrap"><div class="pm-bar" style="width:72%"></div></div>
+              </div>
+              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <span style="font-size:12px;color:var(--text2)">ETH 수익</span>
+                  <span style="font-size:12px;font-weight:600">380,000원</span>
+                </div>
+                <div class="pm-bar-wrap"><div class="pm-bar" style="width:42%;background:var(--sky2)"></div></div>
+              </div>
+              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <span style="font-size:12px;color:var(--text2)">기타 수익</span>
+                  <span style="font-size:12px;font-weight:600">200,000원</span>
+                </div>
+                <div class="pm-bar-wrap"><div class="pm-bar" style="width:24%;background:#8888F8"></div></div>
+              </div>
+            </div>
+          </div>
 
-function dist(i){invs[i].st='완료';renderInv();showModal('분배 완료',invs[i].n+'님께\n'+krw(Math.round(invs[i].inv*invs[i].rate/100))+' 분배 완료')}
-function batchDist(){invs.forEach(v=>v.st='완료');renderInv();showModal('일괄 분배 완료','오늘 전체 수익금\n분배가 완료되었습니다.')}
+          <!-- Panel 2: 투자 플랜 -->
+          <div class="panel-view" id="panel-2">
+            <div class="pm-row">
+              <div class="pm-card">
+                <div class="pm-label">활성 플랜 수</div>
+                <div class="pm-val">3개</div>
+                <div class="pm-change" style="color:var(--text3)">10개 중</div>
+              </div>
+              <div class="pm-card">
+                <div class="pm-label">누적 수익</div>
+                <div class="pm-val">892,500원</div>
+                <div class="pm-change" style="color:var(--green)">이번 달</div>
+              </div>
+            </div>
+            <div class="pm-list">
+              <div class="pm-list-item">
+                <div class="pm-list-icon" style="background:#0A1830;font-size:11px;font-weight:700;color:#4A9EE8">골드</div>
+                <div class="pm-list-info">
+                  <div class="pm-list-name">골드 플랜</div>
+                  <div class="pm-list-sub">일 ROI 6% · 운용 중</div>
+                </div>
+                <div class="pm-list-amt">5,000,000원</div>
+              </div>
+              <div class="pm-list-item">
+                <div class="pm-list-icon" style="background:#0A1428;font-size:11px;font-weight:700;color:#7EC8F0">실버</div>
+                <div class="pm-list-info">
+                  <div class="pm-list-name">실버 플랜</div>
+                  <div class="pm-list-sub">일 ROI 4% · 운용 중</div>
+                </div>
+                <div class="pm-list-amt">800,000원</div>
+              </div>
+              <div class="pm-list-item">
+                <div class="pm-list-icon" style="background:#0E1820;font-size:10px;font-weight:700;color:#8888F8">브론즈</div>
+                <div class="pm-list-info">
+                  <div class="pm-list-name">브론즈 플랜</div>
+                  <div class="pm-list-sub">일 ROI 2.5% · 운용 중</div>
+                </div>
+                <div class="pm-list-amt">200,000원</div>
+              </div>
+            </div>
+          </div>
 
-function showModal(title,sub){
-  document.getElementById('mtit').textContent=title;
-  document.getElementById('msub').textContent=sub;
-  document.getElementById('modal').classList.add('open');
-}
-function closeModal(){document.getElementById('modal').classList.remove('open')}
+          <!-- Panel 3: 보안 -->
+          <div class="panel-view" id="panel-3">
+            <div class="pm-security-grid">
+              <div class="pm-sec-item">
+                <svg class="pm-sec-icon" width="24" height="24" fill="none" stroke="#4A9EE8" stroke-width="1.8" stroke-linecap="round" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <div class="pm-sec-name">AES-256 암호화</div>
+                <div class="pm-sec-status">활성</div>
+              </div>
+              <div class="pm-sec-item">
+                <svg class="pm-sec-icon" width="24" height="24" fill="none" stroke="#4A9EE8" stroke-width="1.8" stroke-linecap="round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <div class="pm-sec-name">2단계 인증</div>
+                <div class="pm-sec-status">필수 적용</div>
+              </div>
+              <div class="pm-sec-item">
+                <svg class="pm-sec-icon" width="24" height="24" fill="none" stroke="#4A9EE8" stroke-width="1.8" stroke-linecap="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                <div class="pm-sec-name">24/7 모니터링</div>
+                <div class="pm-sec-status">운영 중</div>
+              </div>
+              <div class="pm-sec-item">
+                <svg class="pm-sec-icon" width="24" height="24" fill="none" stroke="#4A9EE8" stroke-width="1.8" stroke-linecap="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <div class="pm-sec-name">AI 이상 탐지</div>
+                <div class="pm-sec-status">보호 중</div>
+              </div>
+              <div class="pm-sec-item">
+                <svg class="pm-sec-icon" width="24" height="24" fill="none" stroke="#4A9EE8" stroke-width="1.8" stroke-linecap="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                <div class="pm-sec-name">자산 분리 보관</div>
+                <div class="pm-sec-status">인증 완료</div>
+              </div>
+              <div class="pm-sec-item">
+                <svg class="pm-sec-icon" width="24" height="24" fill="none" stroke="#4A9EE8" stroke-width="1.8" stroke-linecap="round" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                <div class="pm-sec-name">본인 인증</div>
+                <div class="pm-sec-status">전 계정 적용</div>
+              </div>
+            </div>
+          </div>
 
-let tt;
-function showToast(m){
-  const t=document.getElementById('toast');t.textContent=m;clearTimeout(tt);
-  t.classList.remove('show');setTimeout(()=>t.classList.add('show'),10);
-  tt=setTimeout(()=>t.classList.remove('show'),2600);
-}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-setTimeout(()=>{document.getElementById('progf').style.width='25%'},500);
-</script>
+<!-- DASHBOARD PREVIEW -->
+<section class="dashboard-section" id="dashboard">
+  <div class="dashboard-inner">
+    <div style="text-align:center">
+      <div class="section-tag">실시간 플랫폼</div>
+      <h2 class="section-title">투자 지휘 센터</h2>
+      <p class="section-sub" style="max-width:500px;margin:0 auto">실시간 데이터, 아름다운 시각화, 수익을 앞서 관리할 수 있는 모든 도구를 한곳에.</p>
+    </div>
+    <div class="dashboard-preview">
+      <div class="dp-topbar">
+        <div class="dp-title">투자 포트폴리오</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="dp-live"><div class="dp-live-dot"></div>실시간 데이터</div>
+          <div class="dp-chart-period">
+            <button class="dp-period-btn active" onclick="switchPeriod(this,'7d')">7일</button>
+            <button class="dp-period-btn" onclick="switchPeriod(this,'1m')">1개월</button>
+            <button class="dp-period-btn" onclick="switchPeriod(this,'3m')">3개월</button>
+            <button class="dp-period-btn" onclick="switchPeriod(this,'1y')">1년</button>
+          </div>
+        </div>
+      </div>
+      <div class="dp-body">
+        <div class="dp-chart-area">
+          <div class="dp-chart-head">
+            <div>
+              <div class="dp-chart-val" id="dpChartVal">5,000,000원</div>
+              <div class="dp-chart-change" id="dpChartChange">▲ +200,000원 (4.0%) 오늘</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:5px;height:160px;padding-top:12px">
+            <div style="flex:1;background:rgba(74,158,232,.15);border-radius:3px 3px 0 0;height:62%;border-top:2px solid var(--sky)"></div>
+            <div style="flex:1;background:rgba(74,158,232,.15);border-radius:3px 3px 0 0;height:70%;border-top:2px solid var(--sky)"></div>
+            <div style="flex:1;background:rgba(74,158,232,.15);border-radius:3px 3px 0 0;height:58%;border-top:2px solid var(--sky)"></div>
+            <div style="flex:1;background:rgba(74,158,232,.15);border-radius:3px 3px 0 0;height:80%;border-top:2px solid var(--sky)"></div>
+            <div style="flex:1;background:rgba(74,158,232,.15);border-radius:3px 3px 0 0;height:72%;border-top:2px solid var(--sky)"></div>
+            <div style="flex:1;background:rgba(74,158,232,.22);border-radius:3px 3px 0 0;height:88%;border-top:2px solid var(--sky2)"></div>
+            <div style="flex:1;background:rgba(74,158,232,.32);border-radius:3px 3px 0 0;height:100%;border-top:2px solid var(--sky2)"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px">
+            <span style="font-size:11px;color:var(--text3)">월</span>
+            <span style="font-size:11px;color:var(--text3)">화</span>
+            <span style="font-size:11px;color:var(--text3)">수</span>
+            <span style="font-size:11px;color:var(--text3)">목</span>
+            <span style="font-size:11px;color:var(--text3)">금</span>
+            <span style="font-size:11px;color:var(--text3)">토</span>
+            <span style="font-size:11px;color:var(--sky)">오늘</span>
+          </div>
+        </div>
+        <div class="dp-side">
+          <div class="dp-side-card">
+            <div class="dp-side-label">수익 흐름</div>
+            <div class="dp-side-val" style="color:var(--green)">+2,140,000원</div>
+            <div class="dp-side-change" style="color:var(--green)">이번 달 순 수익</div>
+            <div class="dp-allocations">
+              <div class="dp-alloc-row">
+                <div class="dp-alloc-dot" style="background:var(--sky)"></div>
+                <div class="dp-alloc-name">수익 입금</div>
+                <div class="dp-alloc-bar-wrap"><div class="dp-alloc-bar" style="width:78%;background:var(--sky)"></div></div>
+                <div class="dp-alloc-pct">78%</div>
+              </div>
+              <div class="dp-alloc-row">
+                <div class="dp-alloc-dot" style="background:#8888F8"></div>
+                <div class="dp-alloc-name">출금</div>
+                <div class="dp-alloc-bar-wrap"><div class="dp-alloc-bar" style="width:22%;background:#8888F8"></div></div>
+                <div class="dp-alloc-pct">22%</div>
+              </div>
+            </div>
+          </div>
+          <div class="dp-side-card">
+            <div class="dp-side-label">거래 건수</div>
+            <div class="dp-side-val">1,284건</div>
+            <div class="dp-side-change" style="color:var(--text3)">이번 달</div>
+            <div class="dp-allocations" style="margin-top:10px">
+              <div class="dp-alloc-row">
+                <div class="dp-alloc-dot" style="background:var(--green)"></div>
+                <div class="dp-alloc-name">체결 완료</div>
+                <div class="dp-alloc-pct" style="color:var(--green)">99.8%</div>
+              </div>
+              <div class="dp-alloc-row">
+                <div class="dp-alloc-dot" style="background:var(--red)"></div>
+                <div class="dp-alloc-name">실패</div>
+                <div class="dp-alloc-pct" style="color:var(--red)">0.2%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div style="text-align:center">
+    <div class="section-tag">투자 플랜</div>
+    <h2 class="section-title">내 투자금에 맞는 플랜 선택</h2>
+    <p class="section-sub">스타터부터 레거시까지. 투자금 규모에 따라 최적의 ROI가 자동 적용됩니다.</p>
+  </div>
+  <div class="pricing-toggle-wrap">
+    <span class="toggle-label">일간 ROI</span>
+    <div class="toggle-switch" id="pricingToggle" onclick="togglePricing()">
+      <div class="toggle-knob"></div>
+    </div>
+    <span class="toggle-label">월간 ROI</span>
+    <span class="toggle-save">최대 450%</span>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-plan">스타터</div>
+      <div class="price-amount"><span class="price-num" data-monthly="2" data-annual="60">2</span><sup style="font-size:18px;top:4px">%</sup></div>
+      <div class="price-period"><span class="period-label">일간</span> ROI 기준</div>
+      <div class="price-alt" style="font-size:12px;color:var(--text3);margin-bottom:16px;min-height:18px">
+        <span class="price-alt-monthly" style="display:none">월간 기준 <strong style="color:var(--green)">60% ROI</strong> 예상 수익</span>
+        <span class="price-alt-annual">투자 범위 <strong style="color:var(--sky)">1만원 ~ 10만원</strong></span>
+      </div>
+      <ul class="price-features">
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>투자 범위 10,000원 ~ 100,000원</li>
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>일일 수익 200원 (최소 기준)</li>
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>매일 오전 10시 자동 정산</li>
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>기본 수익 대시보드</li>
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>카카오톡 수익 알림</li>
+      </ul>
+      <button class="price-btn price-btn-ghost">스타터 시작하기</button>
+    </div>
+    <div class="price-card featured">
+      <div class="featured-badge">가장 인기</div>
+      <div class="price-plan">골드</div>
+      <div class="price-amount"><span class="price-num" data-monthly="6" data-annual="180">6</span><sup style="font-size:18px;top:4px">%</sup></div>
+      <div class="price-period"><span class="period-label">일간</span> ROI 기준</div>
+      <div class="price-alt" style="font-size:12px;color:var(--text3);margin-bottom:16px;min-height:18px">
+        <span class="price-alt-monthly" style="display:none">월간 기준 <strong style="color:var(--green)">180% ROI</strong> 예상 수익</span>
+        <span class="price-alt-annual">투자 범위 <strong style="color:var(--sky)">100만원 ~ 500만원</strong></span>
+      </div>
+      <ul class="price-features">
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>투자 범위 1,000,000원 ~ 5,000,000원</li>
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>일일 수익 60,000원 (최소 기준)</li>
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>우선 순위 수익 정산</li>
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>AI 수익 분석 리포트</li>
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>전담 투자 매니저</li>
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>수익 출금 우선 처리</li>
+      </ul>
+      <button class="price-btn price-btn-primary">골드 플랜 시작</button>
+    </div>
+    <div class="price-card">
+      <div class="price-plan">레거시</div>
+      <div class="price-amount"><span class="price-num" data-monthly="15" data-annual="450">15</span><sup style="font-size:18px;top:4px">%</sup></div>
+      <div class="price-period"><span class="period-label">일간</span> ROI 기준</div>
+      <div class="price-alt" style="font-size:12px;color:var(--text3);margin-bottom:16px;min-height:18px">
+        <span class="price-alt-monthly" style="display:none">월간 기준 <strong style="color:var(--green)">450% ROI</strong> 예상 수익</span>
+        <span class="price-alt-annual">투자 범위 <strong style="color:var(--sky)">1.5억원 이상</strong></span>
+      </div>
+      <ul class="price-features">
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>골드 플랜의 모든 혜택 포함</li>
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>투자 범위 150,000,000원 이상</li>
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>VIP 전담 매니저</li>
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>맞춤형 수익 극대화 전략</li>
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>24시간 전화 상담 지원</li>
+        <li><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg>당일 출금 처리</li>
+      </ul>
+      <button class="price-btn price-btn-ghost">VIP 상담 신청</button>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY -->
+<section class="security-section" id="security">
+  <div class="security-inner">
+    <div>
+      <div class="section-tag">자산 보호 시스템</div>
+      <h2 class="section-title">보안은 기능이 아닌 — 기본입니다</h2>
+      <p class="section-sub" style="margin-bottom:24px">모든 투자금은 다중 암호화 보호를 받으며, 투자자 자산과 운영 자금은 완전히 분리 보관됩니다. 24시간 감시하므로 투자자는 수익에만 집중할 수 있습니다.</p>
+      <a href="#" class="btn-outline" style="display:inline-block">보안 정책 전문 보기</a>
+    </div>
+    <div class="security-badges">
+      <div class="sec-badge">
+        <div class="sec-badge-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div class="sec-badge-name">AES-256 암호화</div>
+        <div class="sec-badge-desc">모든 데이터는 군사급 256비트 암호화로 보호</div>
+        <div class="sec-badge-status">상시 활성</div>
+      </div>
+      <div class="sec-badge">
+        <div class="sec-badge-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <div class="sec-badge-name">2단계 인증 (2FA)</div>
+        <div class="sec-badge-desc">로그인 및 출금 시 2단계 인증 필수 적용</div>
+        <div class="sec-badge-status">전 계정 적용</div>
+      </div>
+      <div class="sec-badge">
+        <div class="sec-badge-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+        <div class="sec-badge-name">24/7 실시간 감시</div>
+        <div class="sec-badge-desc">보안 전문팀이 365일 24시간 이상 징후 모니터링</div>
+        <div class="sec-badge-status">운영 중</div>
+      </div>
+      <div class="sec-badge">
+        <div class="sec-badge-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <div class="sec-badge-name">AI 이상 거래 탐지</div>
+        <div class="sec-badge-desc">의심 거래의 99.97%를 실시간으로 자동 차단</div>
+        <div class="sec-badge-status">상시 보호</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials-section">
+  <div style="text-align:center">
+    <div class="section-tag">투자자 후기</div>
+    <h2 class="section-title">투자자들의 이야기</h2>
+  </div>
+  <div class="testi-track-wrap">
+    <div class="testi-track" id="testiTrack"></div>
+  </div>
+  <div style="display:flex;justify-content:center;margin-top:32px">
+    <button id="testiToggle" onclick="toggleTestimonials()" aria-label="후기 일시 정지" style="background:var(--bg2);border:1px solid var(--border2);color:var(--text2);padding:10px 18px;border-radius:24px;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;transition:border-color .5s var(--silk),color .5s var(--silk)">
+      <svg id="testiIcon" width="14" height="14" fill="currentColor" stroke="none" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+      <span id="testiLabel">일시 정지</span>
+    </button>
+  </div>
+</section>
+
+<!-- APP DOWNLOAD -->
+<section class="app-section">
+  <div class="app-inner">
+    <div>
+      <div class="section-tag">모바일 앱</div>
+      <h2 class="section-title">SpiderBOT, 이제 모바일에서</h2>
+      <p class="section-sub">어디서든 수익 대시보드 확인, 즉각적인 출금 신청, 실시간 수익 알림을 받아보세요.</p>
+      <div class="app-btns">
+        <a href="#" class="app-store-btn">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="var(--text)" stroke="none"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          <div class="app-store-btn-info">
+            <span class="app-store-btn-sub">다운로드</span>
+            <span class="app-store-btn-name">App Store</span>
+          </div>
+        </a>
+        <a href="#" class="app-store-btn">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="var(--text)" stroke="none"><path d="M3.18 23.76c.3.17.65.19.96.07l12.45-7.2-2.68-2.68-10.73 9.81zM20.54 10.26L17.76 8.6l-3.04 3.04 3.04 3.04 2.8-1.62c.8-.46.8-1.34.02-1.8zM2.22.24C1.9.43 1.67.8 1.67 1.28v21.44c0 .48.23.84.55 1.04l.12.07 12-12L2.22.24zM14.55 11.85L3.18.24c-.3-.17-.67-.15-.97.07l12.03 11.54-1.69 1.69 1.69 1.69.01-.01L14.55 11.85z"/></svg>
+          <div class="app-store-btn-info">
+            <span class="app-store-btn-sub">다운로드</span>
+            <span class="app-store-btn-name">Google Play</span>
+          </div>
+        </a>
+        <a href="#" class="app-store-btn" style="cursor:pointer">
+          <svg viewBox="0 0 32 32" width="26" height="26" fill="none">
+            <rect x="2" y="2" width="12" height="12" rx="1.5" stroke="var(--text)" stroke-width="1.5" fill="none"/>
+            <rect x="5" y="5" width="6" height="6" fill="var(--text)" rx=".5"/>
+            <rect x="18" y="2" width="12" height="12" rx="1.5" stroke="var(--text)" stroke-width="1.5" fill="none"/>
+            <rect x="21" y="5" width="6" height="6" fill="var(--text)" rx=".5"/>
+            <rect x="2" y="18" width="12" height="12" rx="1.5" stroke="var(--text)" stroke-width="1.5" fill="none"/>
+            <rect x="5" y="21" width="6" height="6" fill="var(--text)" rx=".5"/>
+            <rect x="18" y="18" width="3" height="3" fill="var(--text)" rx=".5"/>
+            <rect x="23" y="18" width="3" height="3" fill="var(--text)" rx=".5"/>
+            <rect x="18" y="23" width="3" height="3" fill="var(--text)" rx=".5"/>
+            <rect x="27" y="23" width="3" height="3" fill="var(--text)" rx=".5"/>
+            <rect x="23" y="27" width="7" height="3" fill="var(--text)" rx=".5"/>
+          </svg>
+          <div class="app-store-btn-info">
+            <span class="app-store-btn-sub">QR 코드로</span>
+            <span class="app-store-btn-name">바로 다운로드</span>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div id="phoneTiltWrap" style="display:flex;justify-content:center;align-items:center;perspective:1200px">
+      <div id="phoneFrame" style="width:276px;background:var(--bg3);border:2px solid var(--border2);border-radius:40px;padding:8px;box-shadow:0 12px 32px rgba(0,0,0,.25),0 0 0 1px var(--border);transform-style:preserve-3d;transition:transform .8s var(--silk),box-shadow .8s var(--silk);will-change:transform">
+        <div style="border-radius:34px;overflow:hidden;aspect-ratio:9/19.5;background:var(--bg);position:relative">
+          <img src="images/phone-app-screenshot.jpg" alt="SpiderBOT 모바일 앱" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div style="display:none;position:absolute;inset:0;background:var(--bg2);align-items:center;justify-content:center;flex-direction:column;gap:12px;text-align:center;padding:24px">
+            <svg width="40" height="40" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+            <div style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:var(--text2)">앱 스크린샷</div>
+            <div style="font-size:11px;color:var(--text3);line-height:1.5">이미지를<br><code style="font-family:monospace;color:var(--sky);font-size:10px">images/phone-app-screenshot.jpg</code><br>에 넣어주세요</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="faq-inner">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div style="text-align:left">
+        <div class="section-tag">자주 묻는 질문</div>
+        <h2 class="section-title">궁금한 것이 있으신가요?</h2>
+      </div>
+      <button id="faqToggleAll" onclick="toggleAllFaq()" style="background:transparent;border:1px solid var(--border2);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:8px 16px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .2s;white-space:nowrap;margin-bottom:6px">
+        <svg id="faqToggleIcon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span id="faqToggleLabel">전체 펼치기</span>
+      </button>
+    </div>
+    <div class="faq-list" id="faqList"></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="padding:24px max(48px, calc((100vw - var(--max-w)) / 2));border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+  <div style="font-size:13px;color:var(--text3)">© 2026 SpiderBOT. All rights reserved. Designed by <a href="https://templatemo.com" style="color:var(--sky);text-decoration:none;transition:opacity .3s" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">TemplateMo</a>.</div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <a href="#" class="footer-link">개인정보처리방침</a>
+    <a href="#" class="footer-link">이용약관</a>
+    <a href="#" class="footer-link">쿠키 정책</a>
+    <div style="width:1px;height:14px;background:var(--border)"></div>
+    <div style="display:flex;gap:8px">
+      <a href="#" class="social-btn" aria-label="트위터"><svg viewBox="0 0 24 24"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg></a>
+      <a href="#" class="social-btn" aria-label="텔레그램"><svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 8.208l-2.012 9.488c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.875.733z"/></svg></a>
+      <a href="#" class="social-btn" aria-label="카카오톡"><svg viewBox="0 0 24 24"><path d="M12 3C6.48 3 2 6.72 2 11.25c0 2.85 1.72 5.37 4.34 6.87L5.4 21.5l4.46-2.49c.7.13 1.41.2 2.14.2 5.52 0 10-3.72 10-8.25C22 6.72 17.52 3 12 3z"/></svg></a>
+    </div>
+  </div>
+</footer>
+
+<script src="templatemo-623-novapay-script.js"></script>
 </body>
 </html>
