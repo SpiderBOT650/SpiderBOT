@@ -35,6 +35,7 @@ async function initDB() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id                SERIAL PRIMARY KEY,
+      user_id           VARCHAR(10)  UNIQUE NOT NULL,
       username          VARCHAR(50)  UNIQUE NOT NULL,
       email             VARCHAR(255) UNIQUE NOT NULL,
       password_hash     VARCHAR(255) NOT NULL,
@@ -60,83 +61,18 @@ function auth(req, res, next) {
 
 // ── Email ──
 function emailHTML(username, url) {
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>SpiderBOT Verification</title>
-    </head>
-    <body style="margin: 0; padding: 0; background-color: #07060F; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #07060F; padding: 40px 20px;">
-        <tr>
-          <td align="center">
-            <table width="100%" id="email-card" style="max-width: 500px; background-color: #0E0C1E; border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 16px; padding: 32px; border-collapse: separate; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-              
-              <tr>
-                <td align="center" style="padding-bottom: 24px;">
-                  <span style="font-size: 28px; font-weight: 800; color: #FFFFFF; letter-spacing: 2px; text-transform: uppercase;">
-                    🕷️ <span style="color: #A855F7;">Spider</span>BOT
-                  </span>
-                </td>
-              </tr>
-
-              <tr>
-                <td>
-                  <div style="height: 2px; background: linear-gradient(90deg, #7C3AED, #00E676); margin-bottom: 24px;"></div>
-                </td>
-              </tr>
-
-              <tr>
-                <td align="left" style="padding-bottom: 16px;">
-                  <h1 style="font-size: 20px; font-weight: 700; color: #FFFFFF; margin: 0;">
-                    보안 이메일 인증 안내
-                  </h1>
-                </td>
-              </tr>
-
-              <tr>
-                <td align="left" style="padding-bottom: 28px;">
-                  <p style="font-size: 14px; color: #9B97B8; line-height: 1.6; margin: 0;">
-                    안녕하세요, <strong style="color: #FFFFFF;">${username}</strong> 회원님.<br>
-                    SpiderBOT AI 트레이딩 플랫폼 가입을 환영합니다. 아래의 인증 버튼을 클릭하여 계정 활성화를 완료하고 봇 가동을 시작하세요.
-                  </p>
-                </td>
-              </tr>
-
-              <tr>
-                <td align="center" style="padding-bottom: 28px;">
-                  <a href="${url}" target="_blank" style="display: inline-block; background-color: #7C3AED; color: #FFFFFF; font-size: 14px; font-weight: 700; text-decoration: none; padding: 14px 32px; border-radius: 8px; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4); text-transform: uppercase; letter-spacing: 0.5px;">
-                    계정 인증하기
-                  </a>
-                </td>
-              </tr>
-
-              <tr>
-                <td align="left" style="background-color: #141228; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-                  <p style="font-size: 12px; color: #5A5680; line-height: 1.5; margin: 0;">
-                    💡 버튼이 클릭되지 않으시나요? 아래 주소를 복사하여 브라우저 주소창에 붙여넣어 주세요:<br>
-                    <a href="${url}" target="_blank" style="color: #00E676; text-decoration: none; word-break: break-all;">${url}</a>
-                  </p>
-                </td>
-              </tr>
-
-              <tr>
-                <td align="center" style="padding-top: 24px; border-top: 1px solid rgba(90, 86, 128, 0.2);">
-                  <p style="font-size: 11px; color: #5A5680; margin: 0;">
-                    본 메일은 발신 전용입니다. 문의 사항은 플랫폼 내 고객센터를 이용해 주세요.<br>
-                    © 2026 SpiderBOT Platform. All rights reserved.
-                  </p>
-                </td>
-              </tr>
-
-            </table>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
-  `;
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0C0B18;font-family:Arial,sans-serif">
+<div style="max-width:480px;margin:40px auto;padding:20px">
+  <div style="background:#1A1733;border-radius:20px;padding:40px;border:1px solid rgba(139,92,246,0.3)">
+    <h1 style="margin:0 0 4px;font-size:28px;color:#A855F7;letter-spacing:4px">SpiderBOT</h1>
+    <p style="margin:0 0 28px;font-size:11px;color:#5A5680;letter-spacing:2px">AI TRADING BOT PLATFORM</p>
+    <h2 style="margin:0 0 12px;font-size:18px;color:#fff">이메일 인증 요청</h2>
+    <p style="margin:0 0 28px;font-size:14px;color:#9B97B8;line-height:1.7">안녕하세요 <strong style="color:#C084FC">${username}</strong>님,<br>아래 버튼을 눌러 인증을 완료해주세요.</p>
+    <a href="${url}" style="display:block;background:linear-gradient(135deg,#7C3AED,#A855F7);color:#fff;text-align:center;padding:15px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px">✅ 이메일 인증하기</a>
+    <p style="margin:20px 0 0;font-size:12px;color:#5A5680;text-align:center">링크는 24시간 후 만료됩니다</p>
+  </div>
+</div></body></html>`;
 }
 
 // ════════════════════
@@ -155,9 +91,11 @@ app.post('/api/register', async (req, res) => {
     const hash  = await bcrypt.hash(password, 10);
     const token = crypto.randomBytes(32).toString('hex');
     const exp   = new Date(Date.now() + 86400000);
+    const userId = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+
     await pool.query(
-      `INSERT INTO users (username,email,password_hash,verification_token,token_expires_at) VALUES ($1,$2,$3,$4,$5)`,
-      [username, email.toLowerCase(), hash, token, exp]
+      `INSERT INTO users (user_id,username,email,password_hash,verification_token,token_expires_at) VALUES ($1,$2,$3,$4,$5,$6)`,
+      [userId, username, email.toLowerCase(), hash, token, exp]
     );
     const base = process.env.BASE_URL || `http://localhost:${PORT}`;
     await sendEmail({
@@ -207,7 +145,7 @@ app.post('/api/login', async (req, res) => {
 
 app.get('/api/me', auth, async (req, res) => {
   try {
-    const r = await pool.query('SELECT id,username,email,plan,balance,total_profit,created_at FROM users WHERE id=$1', [req.user.id]);
+    const r = await pool.query('SELECT id,user_id,username,email,plan,balance,total_profit,created_at FROM users WHERE id=$1', [req.user.id]);
     if (!r.rows.length) return res.status(404).json({ error: '사용자 없음' });
     res.json(r.rows[0]);
   } catch (e) { res.status(500).json({ error: '서버 오류' }); }
