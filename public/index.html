@@ -1380,16 +1380,19 @@ function setPeriod(el,days){
 }
 
 function setCalcRate(el, rate, label){
-  // 플랜 선택 시 최소금액 강제 적용
   const idx = PLANS.findIndex(p=>p.rate===rate);
   if(idx<0) return;
   calcPlanIdx = idx;
   crate = rate;
   const plan = PLANS[idx];
-  if(calcAmt < plan.min){
+
+  // 금액이 플랜 범위 밖이면 (최소 미만 OR 최대 초과) → 최소금액으로 변경
+  const outOfRange = calcAmt < plan.min || (plan.max !== Infinity && calcAmt > plan.max);
+  if(outOfRange){
     calcAmt = plan.min;
-    showToast(plan.name+' 플랜 최소 금액 '+plan.min.toLocaleString('ko-KR')+'원으로 설정됐습니다');
+    showToast(plan.name+' 플랜 기준 '+plan.min.toLocaleString('ko-KR')+'원으로 변경됐습니다');
   }
+
   highlightPlanBtn(idx);
   updateCalcDisplay();
 }
